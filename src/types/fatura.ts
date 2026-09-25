@@ -94,3 +94,16 @@ export interface ClassificarTransacaoResultado {
   quem: QuemResponsavel;
   classificacaoManual: boolean;
 }
+
+// Espelha AlertaTransacoesNaoDefinidasResponse
+export interface AlertaTransacoesNaoDefinidas {
+  quantidade: number;
+  total: number;
+}
+
+// Espelha AcertoFinalMesResponse (GET /faturas/{mes}/acerto-final)
+export interface AcertoFinalMes {
+  acerto: Acerto;
+  acertoFinal: Acerto;
+  transacoesNaoDefinidas: AlertaTransacoesNaoDefinidas;
+}

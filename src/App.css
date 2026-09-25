@@ -20,6 +20,94 @@
   font-size: 14px;
 }
 
+.pills-meses {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.month-pill {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+.month-pill.active {
+  border-color: var(--accent);
+}
+
+.month-pill .pill-label {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.month-pill.active .pill-label {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.month-pill .pill-del {
+  border: none;
+  border-left: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  padding: 6px 10px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.month-pill .pill-del:hover {
+  color: #d1242f;
+}
+
+.painel-acerto {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  margin: 24px 0;
+}
+
+.acerto-card {
+  flex: 1 1 260px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.acerto-card.destaque {
+  border-color: var(--accent);
+}
+
+.acerto-card.quites {
+  border-color: #1a7f37;
+}
+
+.acerto-card-label {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.acerto-card-valor {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.alerta-nd-resumo {
+  flex-basis: 100%;
+}
+
 .upload-fatura {
   display: flex;
   gap: 16px;
