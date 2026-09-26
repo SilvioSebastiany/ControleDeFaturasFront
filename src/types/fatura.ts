@@ -1,42 +1,20 @@
-// Espelha os enums do backend (ControleDeFaturas.Domain.Enums). A API NÃO tem
+// Os enums (Titular, QuemResponsavel, QuemBoleto) vêm de fatura.generated.ts,
+// gerado a partir dos enums C# reais (scripts/gerar-enums-front.mjs, repo
+// Controle-de-Faturas) — não editar a mão. A API não tem
 // JsonStringEnumConverter configurado (decisão do usuário: não mexer no
-// backend por causa do front) — enums trafegam como número, na ordem
-// declarada nos enums C#. A ordem aqui precisa ficar em sincronia manual com
-// o backend; se o enum lá mudar de ordem, isto quebra silenciosamente.
+// backend por causa do front), então enums trafegam como número no corpo
+// JSON, na ordem declarada nos enums C#. Ver o cabeçalho de
+// fatura.generated.ts para os detalhes.
+export { Titular, QuemResponsavel, QuemBoleto } from './fatura.generated.ts';
+import { Titular, Titular_NOME } from './fatura.generated.ts';
+import type { QuemResponsavel, QuemBoleto } from './fatura.generated.ts';
 
-// ETitular (src/domain/Enums/ETitular.cs). Usado tanto em corpo JSON (número)
-// quanto em segmento de rota (POST /faturas/{mes}/upload/{titular}) — o model
+// Usado no segmento de rota (POST /faturas/{mes}/upload/{titular}) — o model
 // binder padrão do ASP.NET Core para parâmetro de rota aceita o NOME do enum
 // (case-insensitive), diferente do body, que só entende número sem
-// JsonStringEnumConverter. TITULAR_NOME_ROTA cobre esse segundo caso.
-export const Titular = {
-  Silvio: 0,
-  Claucia: 1,
-} as const;
-export type Titular = (typeof Titular)[keyof typeof Titular];
-
-export const TITULAR_NOME_ROTA: Record<Titular, string> = {
-  [Titular.Silvio]: 'Silvio',
-  [Titular.Claucia]: 'Claucia',
-};
-
-// EQuemResponsavel (src/domain/Enums/EQuemResponsavel.cs)
-export const QuemResponsavel = {
-  Silvio: 0,
-  Claucia: 1,
-  Compartilhado: 2,
-  NaoDefinido: 3,
-} as const;
-export type QuemResponsavel = (typeof QuemResponsavel)[keyof typeof QuemResponsavel];
-
-// EQuemBoleto (src/domain/Enums/EQuemBoleto.cs)
-export const QuemBoleto = {
-  Silvio: 0,
-  Claucia: 1,
-  Compartilhado: 2,
-  Fixo: 3,
-} as const;
-export type QuemBoleto = (typeof QuemBoleto)[keyof typeof QuemBoleto];
+// JsonStringEnumConverter. Mesmo valor de Titular_NOME (gerado), com um nome
+// que deixa esse uso específico claro no call site.
+export const TITULAR_NOME_ROTA: Record<Titular, string> = Titular_NOME;
 
 // Espelha TransacaoResponse (src/api/Responses/TransacaoResponse.cs)
 export interface Transacao {
