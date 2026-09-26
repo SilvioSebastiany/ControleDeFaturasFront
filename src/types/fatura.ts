@@ -1,20 +1,12 @@
 // Os enums (Titular, QuemResponsavel, QuemBoleto) vêm de fatura.generated.ts,
 // gerado a partir dos enums C# reais (scripts/gerar-enums-front.mjs, repo
-// Controle-de-Faturas) — não editar a mão. A API não tem
-// JsonStringEnumConverter configurado (decisão do usuário: não mexer no
-// backend por causa do front), então enums trafegam como número no corpo
-// JSON, na ordem declarada nos enums C#. Ver o cabeçalho de
-// fatura.generated.ts para os detalhes.
+// Controle-de-Faturas) — não editar a mão. A API serializa enum como string
+// (JsonStringEnumConverter, ver Program.cs) — o corpo JSON e o segmento de
+// rota {titular} (POST /faturas/{mes}/upload/{titular}) usam o mesmo valor
+// (o próprio nome do enum, ex.: "Silvio"), então não há mais conversão
+// separada entre os dois como havia quando o corpo era número.
 export { Titular, QuemResponsavel, QuemBoleto } from './fatura.generated.ts';
-import { Titular, Titular_NOME } from './fatura.generated.ts';
-import type { QuemResponsavel, QuemBoleto } from './fatura.generated.ts';
-
-// Usado no segmento de rota (POST /faturas/{mes}/upload/{titular}) — o model
-// binder padrão do ASP.NET Core para parâmetro de rota aceita o NOME do enum
-// (case-insensitive), diferente do body, que só entende número sem
-// JsonStringEnumConverter. Mesmo valor de Titular_NOME (gerado), com um nome
-// que deixa esse uso específico claro no call site.
-export const TITULAR_NOME_ROTA: Record<Titular, string> = Titular_NOME;
+import type { Titular, QuemResponsavel, QuemBoleto } from './fatura.generated.ts';
 
 // Espelha TransacaoResponse (src/api/Responses/TransacaoResponse.cs)
 export interface Transacao {

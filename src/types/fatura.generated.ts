@@ -1,46 +1,46 @@
 // GERADO AUTOMATICAMENTE por scripts/gerar-enums-front.mjs (repo Controle-de-Faturas).
 // Não edite à mão — rode o script de novo depois de mudar um enum em
-// src/domain/Enums/*.cs. A ordem numérica aqui precisa bater com o enum C#
-// real porque a API não serializa enum como string (decisão do usuário).
-// Ver types/fatura.ts para os tipos de Response que usam estes enums.
+// src/domain/Enums/*.cs. A API serializa enum como string
+// (JsonStringEnumConverter, Program.cs) — os valores aqui precisam bater
+// com os nomes dos membros do enum C# real. Ver types/fatura.ts para os
+// tipos de Response que usam estes enums.
 
+// Titular: os valores válidos que a API pode enviar/aceitar neste enum.
+export type Titular = 'Silvio' | 'Claucia';
+
+// Para usar como valor (ex.: Titular.Silvio) em vez de string crua — mesmo
+// resultado, só evita erro de digitação no call site.
 export const Titular = {
-  Silvio: 0,
-  Claucia: 1,
-} as const;
-export type Titular = (typeof Titular)[keyof typeof Titular];
+  Silvio: 'Silvio',
+  Claucia: 'Claucia',
+} as const satisfies Record<string, Titular>;
 
-export const Titular_NOME: Record<Titular, string> = {
-  [Titular.Silvio]: 'Silvio',
-  [Titular.Claucia]: 'Claucia',
-};
+export const Titular_VALORES: readonly Titular[] = ['Silvio', 'Claucia'];
 
+// QuemResponsavel: os valores válidos que a API pode enviar/aceitar neste enum.
+export type QuemResponsavel = 'Silvio' | 'Claucia' | 'Compartilhado' | 'NaoDefinido';
+
+// Para usar como valor (ex.: Titular.Silvio) em vez de string crua — mesmo
+// resultado, só evita erro de digitação no call site.
 export const QuemResponsavel = {
-  Silvio: 0,
-  Claucia: 1,
-  Compartilhado: 2,
-  NaoDefinido: 3,
-} as const;
-export type QuemResponsavel = (typeof QuemResponsavel)[keyof typeof QuemResponsavel];
+  Silvio: 'Silvio',
+  Claucia: 'Claucia',
+  Compartilhado: 'Compartilhado',
+  NaoDefinido: 'NaoDefinido',
+} as const satisfies Record<string, QuemResponsavel>;
 
-export const QuemResponsavel_NOME: Record<QuemResponsavel, string> = {
-  [QuemResponsavel.Silvio]: 'Silvio',
-  [QuemResponsavel.Claucia]: 'Claucia',
-  [QuemResponsavel.Compartilhado]: 'Compartilhado',
-  [QuemResponsavel.NaoDefinido]: 'NaoDefinido',
-};
+export const QuemResponsavel_VALORES: readonly QuemResponsavel[] = ['Silvio', 'Claucia', 'Compartilhado', 'NaoDefinido'];
 
+// QuemBoleto: os valores válidos que a API pode enviar/aceitar neste enum.
+export type QuemBoleto = 'Silvio' | 'Claucia' | 'Compartilhado' | 'Fixo';
+
+// Para usar como valor (ex.: Titular.Silvio) em vez de string crua — mesmo
+// resultado, só evita erro de digitação no call site.
 export const QuemBoleto = {
-  Silvio: 0,
-  Claucia: 1,
-  Compartilhado: 2,
-  Fixo: 3,
-} as const;
-export type QuemBoleto = (typeof QuemBoleto)[keyof typeof QuemBoleto];
+  Silvio: 'Silvio',
+  Claucia: 'Claucia',
+  Compartilhado: 'Compartilhado',
+  Fixo: 'Fixo',
+} as const satisfies Record<string, QuemBoleto>;
 
-export const QuemBoleto_NOME: Record<QuemBoleto, string> = {
-  [QuemBoleto.Silvio]: 'Silvio',
-  [QuemBoleto.Claucia]: 'Claucia',
-  [QuemBoleto.Compartilhado]: 'Compartilhado',
-  [QuemBoleto.Fixo]: 'Fixo',
-};
+export const QuemBoleto_VALORES: readonly QuemBoleto[] = ['Silvio', 'Claucia', 'Compartilhado', 'Fixo'];

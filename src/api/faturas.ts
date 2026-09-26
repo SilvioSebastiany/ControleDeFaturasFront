@@ -1,5 +1,4 @@
 import { apiDelete, apiGet, apiPostFormData } from './http.ts';
-import { TITULAR_NOME_ROTA } from '../types/fatura.ts';
 import type { AcertoFinalMes, DetalheMes, ImportarFaturaResultado, Mes, Titular } from '../types/fatura.ts';
 
 export function listarMeses(): Promise<Mes[]> {
@@ -26,8 +25,10 @@ export function uploadFatura(
   const formData = new FormData();
   formData.append('arquivo', arquivo);
 
+  // Titular já é o próprio nome do enum (ex.: "Silvio") — a API serializa
+  // enum como string tanto no corpo JSON quanto no model binder de rota.
   return apiPostFormData<ImportarFaturaResultado>(
-    `/faturas/${encodeURIComponent(mes)}/upload/${TITULAR_NOME_ROTA[titular]}`,
+    `/faturas/${encodeURIComponent(mes)}/upload/${titular}`,
     formData,
   );
 }

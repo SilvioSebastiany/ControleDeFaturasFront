@@ -70,9 +70,7 @@ export function TabelaTransacoes({
         <h3>{rotuloTitular}</h3>
         <select
           value={filtro}
-          onChange={(e) =>
-            setFiltro(e.target.value === 'todos' ? 'todos' : (Number(e.target.value) as QuemResponsavel))
-          }
+          onChange={(e) => setFiltro(e.target.value as QuemResponsavel | 'todos')}
         >
           <option value="todos">Todos</option>
           {OPCOES_QUEM.map((opcao) => (
