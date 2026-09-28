@@ -5,8 +5,20 @@ import { UploadFatura } from '../components/UploadFatura.tsx';
 import { TabelaTransacoes } from '../components/TabelaTransacoes.tsx';
 import { PainelAcerto } from '../components/PainelAcerto.tsx';
 import { PillsMeses } from '../components/PillsMeses.tsx';
+import { AbaOutrosGastos } from '../components/AbaOutrosGastos.tsx';
+import { AbaRegras } from '../components/AbaRegras.tsx';
 import { Titular } from '../types/fatura.ts';
-import type { AcertoFinalMes, Transacao } from '../types/fatura.ts';
+import type { AcertoFinalMes, Boleto, Transacao } from '../types/fatura.ts';
+
+type Aba = 'resumo' | 'silvio' | 'claucia' | 'outros-gastos' | 'regras';
+
+const ABAS: { id: Aba; rotulo: string }[] = [
+  { id: 'resumo', rotulo: '📊 Resumo' },
+  { id: 'silvio', rotulo: '💳 Silvio' },
+  { id: 'claucia', rotulo: '💳 Claucia' },
+  { id: 'outros-gastos', rotulo: '💸 Outros Gastos' },
+  { id: 'regras', rotulo: '⚙️ Regras' },
+];
 
 function mesAtual(): string {
   const agora = new Date();
@@ -14,13 +26,16 @@ function mesAtual(): string {
   return `${agora.getFullYear()}-${mm}`;
 }
 
-// Página única: seletor/pills de mês, upload por titular, painel de acerto
-// (T16) e tabela de transações com classificação manual (T15). Telas de
-// configuração (regras, boletos, acordos) ficam para T17.
+// Página única com abas, como o legado (index.html): seletor/pills de mês
+// fixos no topo; Resumo (T16), cartões Silvio/Claucia (T15), Outros Gastos e
+// Regras (T17).
 export function FaturaMes() {
+  const [aba, setAba] = useState<Aba>('resumo');
   const [mes, setMes] = useState(mesAtual());
   const [meses, setMeses] = useState<string[]>([]);
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
+  const [boletos, setBoletos] = useState<Boleto[]>([]);
+  const [mesCarregado, setMesCarregado] = useState(false);
   const [acertoFinalMes, setAcertoFinalMes] = useState<AcertoFinalMes | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -33,24 +48,45 @@ export function FaturaMes() {
       });
   }, []);
 
-  const carregar = useCallback((chave: string) => {
-    setCarregando(true);
-    setErro(null);
-    Promise.all([obterDetalheMes(chave), obterAcertoFinal(chave)])
-      .then(([detalhe, acerto]) => {
-        setTransacoes(detalhe.transacoes);
-        setAcertoFinalMes(acerto);
-      })
-      .catch((e) => {
-        if (e instanceof ApiError && e.status === 404) {
-          setTransacoes([]);
-          setAcertoFinalMes(null);
-          return;
-        }
-        setErro(e instanceof ApiError ? e.message : 'Falha ao carregar o mês.');
-      })
-      .finally(() => setCarregando(false));
+  const limparMes = useCallback(() => {
+    setTransacoes([]);
+    setBoletos([]);
+    setAcertoFinalMes(null);
+    setMesCarregado(false);
   }, []);
+
+  // GET /faturas/{mes} também sincroniza os boletos do mês com as categorias
+  // globais (T12) — por isso é recarregado quando uma categoria muda.
+  const carregar = useCallback(
+    (chave: string) => {
+      setCarregando(true);
+      setErro(null);
+      Promise.all([obterDetalheMes(chave), obterAcertoFinal(chave)])
+        .then(([detalhe, acerto]) => {
+          setTransacoes(detalhe.transacoes);
+          setBoletos(detalhe.boletos);
+          setAcertoFinalMes(acerto);
+          setMesCarregado(true);
+        })
+        .catch((e) => {
+          if (e instanceof ApiError && e.status === 404) {
+            limparMes();
+            return;
+          }
+          setErro(e instanceof ApiError ? e.message : 'Falha ao carregar o mês.');
+        })
+        .finally(() => setCarregando(false));
+    },
+    [limparMes],
+  );
+
+  const recarregarAcertoFinal = useCallback(() => {
+    obterAcertoFinal(mes)
+      .then(setAcertoFinalMes)
+      .catch(() => {
+        /* o painel simplesmente mantém o valor anterior se essa atualização falhar */
+      });
+  }, [mes]);
 
   useEffect(() => {
     carregarMeses();
@@ -64,14 +100,8 @@ export function FaturaMes() {
     setTransacoes((atual) =>
       atual.map((t) => (t.id === transacaoAtualizada.id ? transacaoAtualizada : t)),
     );
-    // Classificação manual muda o acerto (T13 exclui "nd" do cálculo) — o
-    // painel ficaria com valor desatualizado até a próxima troca de mês sem
-    // isto.
-    obterAcertoFinal(mes)
-      .then(setAcertoFinalMes)
-      .catch(() => {
-        /* o painel simplesmente mantém o valor anterior se essa atualização falhar */
-      });
+    // Classificação manual muda o acerto (T13 exclui "nd" do cálculo).
+    recarregarAcertoFinal();
   }
 
   function handleImportado() {
@@ -84,10 +114,7 @@ export function FaturaMes() {
     try {
       await removerMes(chave);
       carregarMeses();
-      if (chave === mes) {
-        setTransacoes([]);
-        setAcertoFinalMes(null);
-      }
+      if (chave === mes) limparMes();
     } catch (e) {
       alert(e instanceof ApiError ? e.message : 'Falha ao remover o mês.');
     }
@@ -108,27 +135,63 @@ export function FaturaMes() {
 
       <PillsMeses meses={meses} mesAtivo={mes} onSelecionar={setMes} onRemover={handleRemoverMes} />
 
-      <UploadFatura mes={mes} onImportado={handleImportado} />
+      <nav className="abas">
+        {ABAS.map(({ id, rotulo }) => (
+          <button
+            key={id}
+            type="button"
+            className={aba === id ? 'aba active' : 'aba'}
+            onClick={() => setAba(id)}
+          >
+            {rotulo}
+          </button>
+        ))}
+      </nav>
 
       {carregando && <p>Carregando...</p>}
       {erro && <p className="erro-carregamento">{erro}</p>}
 
-      {acertoFinalMes && <PainelAcerto acertoFinalMes={acertoFinalMes} />}
+      {aba === 'resumo' &&
+        (acertoFinalMes ? (
+          <PainelAcerto acertoFinalMes={acertoFinalMes} />
+        ) : (
+          <p className="config-vazio">Nenhuma fatura importada neste mês ainda.</p>
+        ))}
 
-      <div className="tabelas-transacoes">
-        <TabelaTransacoes
-          titular={Titular.Silvio}
-          rotuloTitular="Silvio"
-          transacoes={transacoesSilvio}
-          onTransacaoAtualizada={atualizarTransacao}
+      {aba === 'silvio' && (
+        <>
+          <UploadFatura titular={Titular.Silvio} rotulo="Silvio" mes={mes} onImportado={handleImportado} />
+          <TabelaTransacoes
+            titular={Titular.Silvio}
+            rotuloTitular="Silvio"
+            transacoes={transacoesSilvio}
+            onTransacaoAtualizada={atualizarTransacao}
+          />
+        </>
+      )}
+
+      {aba === 'claucia' && (
+        <>
+          <UploadFatura titular={Titular.Claucia} rotulo="Claucia" mes={mes} onImportado={handleImportado} />
+          <TabelaTransacoes
+            titular={Titular.Claucia}
+            rotuloTitular="Claucia"
+            transacoes={transacoesClaucia}
+            onTransacaoAtualizada={atualizarTransacao}
+          />
+        </>
+      )}
+
+      {aba === 'outros-gastos' && (
+        <AbaOutrosGastos
+          mesCarregado={mesCarregado}
+          boletos={boletos}
+          onCategoriasAlteradas={() => carregar(mes)}
+          onAcordosAlterados={recarregarAcertoFinal}
         />
-        <TabelaTransacoes
-          titular={Titular.Claucia}
-          rotuloTitular="Claucia"
-          transacoes={transacoesClaucia}
-          onTransacaoAtualizada={atualizarTransacao}
-        />
-      </div>
+      )}
+
+      {aba === 'regras' && <AbaRegras />}
     </div>
   );
 }

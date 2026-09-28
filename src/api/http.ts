@@ -20,6 +20,21 @@ export class ApiError extends Error {
 
 const TIMEOUT_MS = 30000;
 
+// 422 da API vem como lista de notificações [{ chave, mensagem }]
+// (NotificationContext); os demais erros como ProblemDetails ({ title }).
+function extrairMensagemErro(corpo: unknown): string | null {
+  if (Array.isArray(corpo)) {
+    const mensagens = corpo
+      .map((n) => (n && typeof n === 'object' && 'mensagem' in n ? String(n.mensagem) : null))
+      .filter((m): m is string => !!m);
+    return mensagens.length ? mensagens.join(' ') : null;
+  }
+  if (corpo && typeof corpo === 'object' && 'title' in corpo && typeof corpo.title === 'string') {
+    return corpo.title;
+  }
+  return null;
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -41,11 +56,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   if (!response.ok) {
     const corpo = await response.json().catch(() => null);
-    const mensagem =
-      (corpo && typeof corpo === 'object' && 'title' in corpo && typeof corpo.title === 'string'
-        ? corpo.title
-        : null) ?? `HTTP ${response.status}`;
-    throw new ApiError(mensagem, response.status);
+    throw new ApiError(extrairMensagemErro(corpo) ?? `HTTP ${response.status}`, response.status);
   }
 
   if (response.status === 204) return undefined as T;
@@ -54,6 +65,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
 export function apiGet<T>(path: string): Promise<T> {
   return request<T>(path, { method: 'GET' });
+}
+
+export function apiPost<T>(path: string, body: unknown): Promise<T> {
+  return request<T>(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
 }
 
 export function apiPut<T>(path: string, body: unknown): Promise<T> {

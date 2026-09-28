@@ -1,33 +1,18 @@
 import { useRef, useState } from 'react';
 import { uploadFatura } from '../api/faturas.ts';
 import { ApiError } from '../api/http.ts';
-import { Titular } from '../types/fatura.ts';
-import type { Titular as TitularType } from '../types/fatura.ts';
+import type { Titular } from '../types/fatura.ts';
 
-interface UploadFaturaProps {
-  mes: string;
-  onImportado: () => void;
-}
-
-// Um botão de upload por titular (substitui o par de cards silvio/claucia do
-// legado, js/renderer.js) — o parsing do PDF agora é feito no backend (T7),
-// então o front só envia o arquivo.
-export function UploadFatura({ mes, onImportado }: UploadFaturaProps) {
-  return (
-    <section className="upload-fatura">
-      <UploadPorTitular titular={Titular.Silvio} rotulo="Silvio" mes={mes} onImportado={onImportado} />
-      <UploadPorTitular titular={Titular.Claucia} rotulo="Claucia" mes={mes} onImportado={onImportado} />
-    </section>
-  );
-}
-
-function UploadPorTitular({
+// Upload do PDF de um titular (substitui o card de upload de cada aba de
+// cartão do legado, js/renderer.js) — o parsing do PDF agora é feito no
+// backend (T7), então o front só envia o arquivo.
+export function UploadFatura({
   titular,
   rotulo,
   mes,
   onImportado,
 }: {
-  titular: TitularType;
+  titular: Titular;
   rotulo: string;
   mes: string;
   onImportado: () => void;
@@ -58,7 +43,7 @@ function UploadPorTitular({
 
   return (
     <div className="upload-titular">
-      <h3>{rotulo}</h3>
+      <h3>PDF da fatura — {rotulo}</h3>
       <button type="button" disabled={enviando} onClick={() => inputRef.current?.click()}>
         {enviando ? 'Enviando...' : 'Enviar fatura (PDF)'}
       </button>

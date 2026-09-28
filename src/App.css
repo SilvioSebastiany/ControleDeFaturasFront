@@ -108,18 +108,145 @@
   flex-basis: 100%;
 }
 
-.upload-fatura {
+.abas {
   display: flex;
-  gap: 16px;
-  margin: 24px 0;
+  gap: 4px;
   flex-wrap: wrap;
+  margin: 20px 0 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.aba {
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text);
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.aba.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
 }
 
 .upload-titular {
-  flex: 1 1 240px;
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 16px;
+  margin: 24px 0;
+}
+
+.config-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 24px 0;
+}
+
+.config-card h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.config-info {
+  background: var(--accent-bg);
+  color: var(--text-h);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.config-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 12px 0;
+}
+
+.config-form input[type='text'] {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.config-form .config-input-valor {
+  flex: 0 0 110px;
+}
+
+.config-vazio {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.config-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.config-lista li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.config-lista .badge {
+  margin-bottom: 0;
+}
+
+.config-item-nome {
+  flex: 1 1 160px;
+  color: var(--text-h);
+}
+
+.config-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.config-tabela th,
+.config-tabela td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.btn-primary {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btn-del {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn-del:hover {
+  color: #d1242f;
+  border-color: #d1242f;
 }
 
 .upload-titular h3 {

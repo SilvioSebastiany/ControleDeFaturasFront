@@ -65,6 +65,33 @@ export interface ClassificarTransacaoResultado {
   classificacaoManual: boolean;
 }
 
+// Espelha RegraClassificacaoResponse (GET /regras-classificacao, já ordenado
+// por prioridade: menor Ordem primeiro)
+export interface RegraClassificacao {
+  id: string;
+  palavraChave: string;
+  quem: QuemResponsavel;
+  ordem: number;
+}
+
+// Espelha CategoriaBoletoResponse (GET /categorias-boleto)
+export interface CategoriaBoleto {
+  id: string;
+  nome: string;
+  quem: QuemBoleto | null;
+  pagoPor: Titular | null;
+  valorFixo: number | null;
+  valor: number | null;
+}
+
+// Espelha AcordoFixoResponse (GET /acordos-fixos)
+export interface AcordoFixo {
+  id: string;
+  descricao: string;
+  devedor: Titular;
+  valor: number;
+}
+
 // Espelha AlertaTransacoesNaoDefinidasResponse
 export interface AlertaTransacoesNaoDefinidas {
   quantidade: number;
