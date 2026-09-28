@@ -104,6 +104,12 @@ export function FaturaMes() {
     recarregarAcertoFinal();
   }
 
+  function atualizarBoleto(boletoAtualizado: Boleto) {
+    setBoletos((atual) => atual.map((b) => (b.id === boletoAtualizado.id ? boletoAtualizado : b)));
+    // Boletos entram no acerto do mês (T12/T13) — qualquer edição reflete nele.
+    recarregarAcertoFinal();
+  }
+
   function handleImportado() {
     carregar(mes);
     carregarMeses();
@@ -186,6 +192,7 @@ export function FaturaMes() {
         <AbaOutrosGastos
           mesCarregado={mesCarregado}
           boletos={boletos}
+          onBoletoAtualizado={atualizarBoleto}
           onCategoriasAlteradas={() => carregar(mes)}
           onAcordosAlterados={recarregarAcertoFinal}
         />

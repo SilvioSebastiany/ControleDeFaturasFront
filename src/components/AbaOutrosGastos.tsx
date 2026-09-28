@@ -7,6 +7,13 @@ import {
   removerAcordoFixo,
   removerCategoriaBoleto,
 } from '../api/configuracao.ts';
+import {
+  atualizarPagoPorBoleto,
+  atualizarQuemBoleto,
+  atualizarValorBoleto,
+  atualizarValorFixoBoleto,
+  fixarBoleto,
+} from '../api/boletos.ts';
 import { ApiError } from '../api/http.ts';
 import { QuemBoleto, Titular } from '../types/fatura.ts';
 import type { AcordoFixo, Boleto, CategoriaBoleto } from '../types/fatura.ts';
@@ -31,35 +38,47 @@ function mensagemDe(e: unknown, padrao: string): string {
 interface AbaOutrosGastosProps {
   mesCarregado: boolean;
   boletos: Boleto[];
+  onBoletoAtualizado: (boleto: Boleto) => void;
   onCategoriasAlteradas: () => void;
   onAcordosAlterados: () => void;
 }
 
 // Aba "Outros Gastos" (porta do tab-boletos do legado, js/boletos.js).
-// Boletos do mês são só leitura na T17 — a edição (valor, de quem, quem pagou,
-// valor fixo) é a T18. Categorias e acordos fixos são globais (todos os meses).
+// Boletos do mês são editáveis (T18: valor, de quem, quem pagou, valor fixo,
+// fixar). Categorias e acordos fixos são globais (todos os meses).
 export function AbaOutrosGastos({
   mesCarregado,
   boletos,
+  onBoletoAtualizado,
   onCategoriasAlteradas,
   onAcordosAlterados,
 }: AbaOutrosGastosProps) {
   return (
     <>
-      <BoletosDoMes mesCarregado={mesCarregado} boletos={boletos} />
+      <BoletosDoMes mesCarregado={mesCarregado} boletos={boletos} onAtualizado={onBoletoAtualizado} />
       <Categorias onAlteradas={onCategoriasAlteradas} />
       <AcordosFixos onAlterados={onAcordosAlterados} />
     </>
   );
 }
 
-function BoletosDoMes({ mesCarregado, boletos }: { mesCarregado: boolean; boletos: Boleto[] }) {
+const OPCOES_QUEM_BOLETO: QuemBoleto[] = [QuemBoleto.Silvio, QuemBoleto.Claucia, QuemBoleto.Compartilhado];
+
+function BoletosDoMes({
+  mesCarregado,
+  boletos,
+  onAtualizado,
+}: {
+  mesCarregado: boolean;
+  boletos: Boleto[];
+  onAtualizado: (boleto: Boleto) => void;
+}) {
   return (
     <section className="config-card">
       <h2>Outros gastos do mês</h2>
       <p className="config-info">
-        Um boleto por categoria cadastrada abaixo, criado automaticamente ao abrir o mês. A edição dos
-        valores ainda não está disponível.
+        Um boleto por categoria cadastrada abaixo, criado automaticamente ao abrir o mês. 📌 fixa o valor
+        atual como padrão para os próximos meses.
       </p>
       {!mesCarregado ? (
         <p className="config-vazio">Este mês ainda não tem fatura importada.</p>
@@ -74,22 +93,165 @@ function BoletosDoMes({ mesCarregado, boletos }: { mesCarregado: boolean; boleto
               <th>De quem é</th>
               <th>Quem pagou</th>
               <th style={{ textAlign: 'right' }}>Valor fixo</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
             {boletos.map((boleto) => (
-              <tr key={boleto.id}>
-                <td>{boleto.nome}</td>
-                <td className="amount">{formatarValor(boleto.valor)}</td>
-                <td>{ROTULO_QUEM_BOLETO[boleto.quem]}</td>
-                <td>{ROTULO_TITULAR[boleto.pagoPor]}</td>
-                <td className="amount">{boleto.valorFixo != null ? formatarValor(boleto.valorFixo) : '—'}</td>
-              </tr>
+              <LinhaBoleto key={boleto.id} boleto={boleto} onAtualizado={onAtualizado} />
             ))}
           </tbody>
         </table>
       )}
     </section>
+  );
+}
+
+function LinhaBoleto({
+  boleto,
+  onAtualizado,
+}: {
+  boleto: Boleto;
+  onAtualizado: (boleto: Boleto) => void;
+}) {
+  const [valorTexto, setValorTexto] = useState(formatarValor(boleto.valor).replace('R$ ', ''));
+  const [valorFixoTexto, setValorFixoTexto] = useState(
+    boleto.valorFixo != null ? formatarValor(boleto.valorFixo).replace('R$ ', '') : '',
+  );
+  const [enviando, setEnviando] = useState(false);
+
+  const fixado = boleto.quem === QuemBoleto.Fixo;
+
+  async function salvarValor() {
+    const valor = lerValor(valorTexto);
+    if (valor === boleto.valor || enviando) return;
+    setEnviando(true);
+    try {
+      const resultado = await atualizarValorBoleto(boleto.id, valor);
+      onAtualizado({ ...boleto, valor: resultado.valor });
+    } catch (e) {
+      alert(e instanceof ApiError ? e.message : 'Falha ao atualizar o valor.');
+      setValorTexto(formatarValor(boleto.valor).replace('R$ ', ''));
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  async function alterarQuem(quem: QuemBoleto) {
+    if (quem === boleto.quem || enviando) return;
+    setEnviando(true);
+    try {
+      const resultado = await atualizarQuemBoleto(boleto.id, quem);
+      onAtualizado({ ...boleto, quem: resultado.quem });
+    } catch (e) {
+      alert(e instanceof ApiError ? e.message : 'Falha ao atualizar quem paga.');
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  async function alterarPagoPor(pagoPor: Titular) {
+    if (pagoPor === boleto.pagoPor || enviando) return;
+    setEnviando(true);
+    try {
+      const resultado = await atualizarPagoPorBoleto(boleto.id, pagoPor);
+      onAtualizado({ ...boleto, pagoPor: resultado.pagoPor });
+    } catch (e) {
+      alert(e instanceof ApiError ? e.message : 'Falha ao atualizar quem pagou.');
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  async function salvarValorFixo() {
+    const valor = valorFixoTexto.trim() ? lerValor(valorFixoTexto) : null;
+    if (valor === boleto.valorFixo || enviando) return;
+    setEnviando(true);
+    try {
+      const resultado = await atualizarValorFixoBoleto(boleto.id, valor);
+      onAtualizado({ ...boleto, valorFixo: resultado.valorFixo });
+    } catch (e) {
+      alert(e instanceof ApiError ? e.message : 'Falha ao atualizar o valor fixo.');
+      setValorFixoTexto(boleto.valorFixo != null ? formatarValor(boleto.valorFixo).replace('R$ ', '') : '');
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  async function alternarFixar() {
+    if (enviando) return;
+    setEnviando(true);
+    try {
+      const resultado = await fixarBoleto(boleto.id);
+      onAtualizado({ ...boleto, quem: resultado.quem });
+    } catch (e) {
+      alert(e instanceof ApiError ? e.message : 'Falha ao fixar o boleto.');
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <tr>
+      <td>{boleto.nome}</td>
+      <td className="amount">
+        <input
+          type="text"
+          inputMode="decimal"
+          className="config-input-valor"
+          value={valorTexto}
+          disabled={enviando || fixado}
+          onChange={(e) => setValorTexto(e.target.value)}
+          onBlur={salvarValor}
+        />
+      </td>
+      <td>
+        {fixado ? (
+          ROTULO_QUEM_BOLETO[QuemBoleto.Fixo]
+        ) : (
+          <select value={boleto.quem} disabled={enviando} onChange={(e) => alterarQuem(e.target.value as QuemBoleto)}>
+            {OPCOES_QUEM_BOLETO.map((opcao) => (
+              <option key={opcao} value={opcao}>
+                {ROTULO_QUEM_BOLETO[opcao]}
+              </option>
+            ))}
+          </select>
+        )}
+      </td>
+      <td>
+        <select
+          value={boleto.pagoPor}
+          disabled={enviando}
+          onChange={(e) => alterarPagoPor(e.target.value as Titular)}
+        >
+          <option value={Titular.Silvio}>Silvio</option>
+          <option value={Titular.Claucia}>Claucia</option>
+        </select>
+      </td>
+      <td className="amount">
+        <input
+          type="text"
+          inputMode="decimal"
+          placeholder="—"
+          className="config-input-valor"
+          value={valorFixoTexto}
+          disabled={enviando}
+          onChange={(e) => setValorFixoTexto(e.target.value)}
+          onBlur={salvarValorFixo}
+        />
+      </td>
+      <td>
+        <button
+          type="button"
+          className={fixado ? 'btn-who active' : 'btn-who'}
+          disabled={enviando}
+          title={fixado ? 'Remover valor fixo desta categoria' : 'Fixar valor atual como padrão'}
+          onClick={alternarFixar}
+        >
+          📌
+        </button>
+      </td>
+    </tr>
   );
 }
 
