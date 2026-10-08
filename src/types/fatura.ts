@@ -30,10 +30,19 @@ export interface Boleto {
   valorFixo: number | null;
 }
 
+// Espelha ItemAcertoResponse
+export interface ItemAcerto {
+  descricao: string;
+  valor: number;
+  quemDeve: Titular;
+  valorEfeito: number;
+}
+
 // Espelha AcertoResponse
 export interface Acerto {
   quemDeve: Titular | null;
   valor: number;
+  itens: ItemAcerto[];
 }
 
 // Espelha MesResponse (GET /faturas)

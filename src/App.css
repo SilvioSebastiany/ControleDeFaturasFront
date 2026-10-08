@@ -20,6 +20,17 @@
   font-size: 14px;
 }
 
+.btn-tema {
+  border: 1px solid var(--border);
+  background: transparent;
+  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
 .pills-meses {
   display: flex;
   gap: 8px;
@@ -80,9 +91,6 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 
 .acerto-card.destaque {
@@ -91,6 +99,26 @@
 
 .acerto-card.quites {
   border-color: #1a7f37;
+}
+
+.acerto-card-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+}
+
+.acerto-card-toggle:disabled {
+  cursor: default;
 }
 
 .acerto-card-label {
@@ -102,6 +130,40 @@
   font-size: 20px;
   font-weight: 600;
   color: var(--text-h);
+}
+
+.acerto-card-seta {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.acerto-itens {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.acerto-itens li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.acerto-item-descricao {
+  color: var(--text);
+}
+
+.acerto-item-valor {
+  color: var(--text-h);
+  white-space: nowrap;
 }
 
 .alerta-nd-resumo {
@@ -131,6 +193,60 @@
   border-bottom-color: var(--accent);
   font-weight: 600;
 }
+
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .abas {
+    display: none;
+  }
+
+  .fatura-mes {
+    padding-bottom: 80px;
+  }
+
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    z-index: 200;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .bnav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 4px;
+    border: none;
+    background: none;
+    color: var(--text);
+    font-size: 10px;
+    cursor: pointer;
+  }
+
+  .bnav-item.active {
+    color: var(--accent);
+  }
+
+  .bnav-icon {
+    font-size: 20px;
+  }
+
+  .bnav-label {
+    font-size: 10px;
+    font-weight: 500;
+  }
+}
+
 
 .upload-titular {
   border: 1px solid var(--border);

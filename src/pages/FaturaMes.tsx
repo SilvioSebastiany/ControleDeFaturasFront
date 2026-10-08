@@ -7,17 +7,18 @@ import { PainelAcerto } from '../components/PainelAcerto.tsx';
 import { PillsMeses } from '../components/PillsMeses.tsx';
 import { AbaOutrosGastos } from '../components/AbaOutrosGastos.tsx';
 import { AbaRegras } from '../components/AbaRegras.tsx';
+import { useTema } from '../hooks/useTema.ts';
 import { Titular } from '../types/fatura.ts';
 import type { AcertoFinalMes, Boleto, Transacao } from '../types/fatura.ts';
 
 type Aba = 'resumo' | 'silvio' | 'claucia' | 'outros-gastos' | 'regras';
 
-const ABAS: { id: Aba; rotulo: string }[] = [
-  { id: 'resumo', rotulo: '📊 Resumo' },
-  { id: 'silvio', rotulo: '💳 Silvio' },
-  { id: 'claucia', rotulo: '💳 Claucia' },
-  { id: 'outros-gastos', rotulo: '💸 Outros Gastos' },
-  { id: 'regras', rotulo: '⚙️ Regras' },
+const ABAS: { id: Aba; rotulo: string; icone: string; label: string }[] = [
+  { id: 'resumo', rotulo: '📊 Resumo', icone: '📊', label: 'Resumo' },
+  { id: 'silvio', rotulo: '💳 Silvio', icone: '💳', label: 'Silvio' },
+  { id: 'claucia', rotulo: '💳 Claucia', icone: '💳', label: 'Claucia' },
+  { id: 'outros-gastos', rotulo: '💸 Outros Gastos', icone: '💸', label: 'Gastos' },
+  { id: 'regras', rotulo: '⚙️ Regras', icone: '⚙️', label: 'Regras' },
 ];
 
 function mesAtual(): string {
@@ -30,6 +31,7 @@ function mesAtual(): string {
 // fixos no topo; Resumo (T16), cartões Silvio/Claucia (T15), Outros Gastos e
 // Regras (T17).
 export function FaturaMes() {
+  const { tema, alternar: alternarTema } = useTema();
   const [aba, setAba] = useState<Aba>('resumo');
   const [mes, setMes] = useState(mesAtual());
   const [meses, setMeses] = useState<string[]>([]);
@@ -137,6 +139,15 @@ export function FaturaMes() {
           Mês
           <input type="month" value={mes} onChange={(e) => setMes(e.target.value)} />
         </label>
+        <button
+          type="button"
+          className="btn-tema"
+          onClick={alternarTema}
+          aria-label={tema === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
+          title={tema === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
+        >
+          {tema === 'dark' ? '☀️' : '🌙'}
+        </button>
       </header>
 
       <PillsMeses meses={meses} mesAtivo={mes} onSelecionar={setMes} onRemover={handleRemoverMes} />
@@ -150,6 +161,20 @@ export function FaturaMes() {
             onClick={() => setAba(id)}
           >
             {rotulo}
+          </button>
+        ))}
+      </nav>
+
+      <nav className="bottom-nav">
+        {ABAS.map(({ id, icone, label }) => (
+          <button
+            key={id}
+            type="button"
+            className={aba === id ? 'bnav-item active' : 'bnav-item'}
+            onClick={() => setAba(id)}
+          >
+            <span className="bnav-icon">{icone}</span>
+            <span className="bnav-label">{label}</span>
           </button>
         ))}
       </nav>
