@@ -59,3 +59,15 @@ export const RegraAplicada = {
 } as const satisfies Record<string, RegraAplicada>;
 
 export const RegraAplicada_VALORES: readonly RegraAplicada[] = ['MeioAMeio', 'ValorFixo', 'PessoalDoOutro', 'AcordoFixo', 'Pagamento'];
+
+// MotivoSemEfeito: os valores válidos que a API pode enviar/aceitar neste enum.
+export type MotivoSemEfeito = 'PessoalDeQuemPagou' | 'ValorZero';
+
+// Para usar como valor (ex.: Titular.Silvio) em vez de string crua — mesmo
+// resultado, só evita erro de digitação no call site.
+export const MotivoSemEfeito = {
+  PessoalDeQuemPagou: 'PessoalDeQuemPagou',
+  ValorZero: 'ValorZero',
+} as const satisfies Record<string, MotivoSemEfeito>;
+
+export const MotivoSemEfeito_VALORES: readonly MotivoSemEfeito[] = ['PessoalDeQuemPagou', 'ValorZero'];

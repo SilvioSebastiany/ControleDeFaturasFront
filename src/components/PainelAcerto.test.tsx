@@ -1,8 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { PainelAcerto } from './PainelAcerto.tsx';
-import { RegraAplicada, Titular } from '../types/fatura.ts';
+import { MotivoSemEfeito, RegraAplicada, Titular } from '../types/fatura.ts';
 import type { AcertoFinalMes } from '../types/fatura.ts';
 
 const acertoFinalMes: AcertoFinalMes = {
@@ -19,8 +19,9 @@ const acertoFinalMes: AcertoFinalMes = {
         regra: RegraAplicada.MeioAMeio,
       },
     ],
+    lancamentosSemEfeito: [],
   },
-  acertoFinal: { quemDeve: null, valor: 0, itens: [] },
+  acertoFinal: { quemDeve: null, valor: 0, itens: [], lancamentosSemEfeito: [] },
   transacoesNaoDefinidas: { quantidade: 0, total: 0 },
 };
 
@@ -59,7 +60,12 @@ describe('PainelAcerto', () => {
         <PainelAcerto
           acertoFinalMes={{
             ...acertoFinalMes,
-            acerto: { quemDeve: item.quemDeve, valor: Math.abs(item.valorEfeito), itens: [item] },
+            acerto: {
+              quemDeve: item.quemDeve,
+              valor: Math.abs(item.valorEfeito),
+              itens: [item],
+              lancamentosSemEfeito: [],
+            },
           }}
         />,
       );
@@ -149,6 +155,45 @@ describe('PainelAcerto', () => {
       expect(item).toHaveTextContent(
         'estorno de R$ 50,00 pago pelo Silvio, 50/50 → Claucia deve R$ 25,00 a menos',
       );
+    });
+  });
+  describe('lançamentos sem efeito', () => {
+    const comSemEfeito: AcertoFinalMes = {
+      ...acertoFinalMes,
+      acerto: {
+        ...acertoFinalMes.acerto,
+        lancamentosSemEfeito: [
+          { descricao: 'Github', valor: 54.28, pagoPor: Titular.Silvio, motivo: MotivoSemEfeito.PessoalDeQuemPagou },
+          { descricao: 'Anuidade isenta', valor: 0, pagoPor: Titular.Claucia, motivo: MotivoSemEfeito.ValorZero },
+        ],
+      },
+    };
+
+    it('lista cada um numa seção própria, com valor, quem pagou e o motivo', () => {
+      render(<PainelAcerto acertoFinalMes={comSemEfeito} />);
+
+      const secao = screen.getByRole('region', { name: 'Lançamentos sem efeito' });
+      const [github, anuidade] = within(secao).getAllByRole('listitem');
+      expect(github).toHaveTextContent('Github');
+      expect(github).toHaveTextContent('R$ 54,28 pago pelo Silvio, gasto pessoal de quem pagou');
+      expect(anuidade).toHaveTextContent('Anuidade isenta');
+      expect(anuidade).toHaveTextContent('R$ 0,00 pago pela Claucia, valor zero');
+    });
+
+    it('não polui a lista principal de itens do acerto', async () => {
+      render(<PainelAcerto acertoFinalMes={comSemEfeito} />);
+      await userEvent.click(screen.getByRole('button', { name: /Acerto do mês/ }));
+
+      const secao = screen.getByRole('region', { name: 'Lançamentos sem efeito' });
+      const principal = screen.getAllByRole('listitem').filter((li) => !secao.contains(li));
+      expect(principal).toHaveLength(1);
+      expect(principal[0]).toHaveTextContent('Mercado');
+    });
+
+    it('não mostra a seção quando não há lançamentos sem efeito', () => {
+      render(<PainelAcerto acertoFinalMes={acertoFinalMes} />);
+
+      expect(screen.queryByRole('region', { name: 'Lançamentos sem efeito' })).not.toBeInTheDocument();
     });
   });
 });

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { RegraAplicada, Titular } from '../types/fatura.ts';
-import type { Acerto, AcertoFinalMes, ItemAcerto } from '../types/fatura.ts';
+import { MotivoSemEfeito, RegraAplicada, Titular } from '../types/fatura.ts';
+import type { Acerto, AcertoFinalMes, ItemAcerto, LancamentoSemEfeito } from '../types/fatura.ts';
 
 function formatarValor(valor: number): string {
   return 'R$ ' + Math.abs(valor).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -34,6 +34,34 @@ function descreverItem(item: ItemAcerto): string {
     `${ROTULO_TITULAR[item.quemDeve]} deve ${formatarValor(item.valorEfeito)}` +
     (item.valorEfeito < 0 ? ' a menos' : '');
   return `${original}${pagoPor}, ${ROTULO_REGRA[item.regra]} → ${efeito}`;
+}
+
+const ROTULO_MOTIVO: Record<MotivoSemEfeito, string> = {
+  [MotivoSemEfeito.PessoalDeQuemPagou]: 'gasto pessoal de quem pagou',
+  [MotivoSemEfeito.ValorZero]: 'valor zero',
+};
+
+// "R$ 54,28 pago pelo Silvio, gasto pessoal de quem pagou"
+function descreverSemEfeito(l: LancamentoSemEfeito): string {
+  return `${formatarValor(l.valor)} pago ${PAGO_POR[l.pagoPor]}, ${ROTULO_MOTIVO[l.motivo]}`;
+}
+
+// Seção discreta, separada da lista principal: lançamentos que não geraram dívida.
+function SecaoSemEfeito({ lancamentos }: { lancamentos: LancamentoSemEfeito[] }) {
+  if (lancamentos.length === 0) return null;
+  return (
+    <section className="sem-efeito" aria-label="Lançamentos sem efeito">
+      <h4 className="sem-efeito-titulo">Lançamentos sem efeito</h4>
+      <ul className="sem-efeito-lista">
+        {lancamentos.map((l, i) => (
+          <li key={i}>
+            <span className="acerto-item-descricao">{l.descricao}</span>
+            <span className="acerto-item-valor">{descreverSemEfeito(l)}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
 }
 
 // Cartão de acerto expansível — clicar mostra os itens (transações, boletos,
@@ -96,6 +124,7 @@ export function PainelAcerto({ acertoFinalMes }: { acertoFinalMes: AcertoFinalMe
     <section className="painel-acerto">
       <CartaoAcerto titulo="Acerto do mês" acerto={acerto} />
       <CartaoAcerto titulo="Acerto final (com acordos e pagamentos)" destaque acerto={acertoFinal} />
+      <SecaoSemEfeito lancamentos={acerto.lancamentosSemEfeito} />
 
       {transacoesNaoDefinidas.quantidade > 0 && (
         <p className="alerta-nd alerta-nd-resumo">

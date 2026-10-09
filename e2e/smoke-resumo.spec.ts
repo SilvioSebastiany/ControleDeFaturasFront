@@ -40,6 +40,19 @@ test.describe('Resumo do mês', () => {
       'R$ 30,00 pago pelo Silvio, pessoal do outro → Claucia deve R$ 30,00',
     );
 
+    // Gasto pessoal de quem pagou fica numa seção própria, fora da lista principal.
+    const semEfeito = page.getByRole('region', { name: 'Lançamentos sem efeito' });
+    await expect(semEfeito.getByRole('listitem')).toHaveCount(1);
+    await expect(semEfeito.getByRole('listitem')).toContainText(
+      'Assinatura Pessoal',
+    );
+    await expect(semEfeito.getByRole('listitem')).toContainText(
+      'R$ 25,00 pago pelo Silvio, gasto pessoal de quem pagou',
+    );
+    await expect(
+      page.getByRole('listitem').filter({ hasText: 'Assinatura Pessoal' }),
+    ).toHaveCount(1);
+
     await acertoFinal.click();
     await expect(page.getByRole('listitem').filter({ hasText: 'Acordo E2E' })).toContainText(
       'R$ 20,00, acordo fixo → Silvio deve R$ 20,00',

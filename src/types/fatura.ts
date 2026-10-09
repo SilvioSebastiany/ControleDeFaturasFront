@@ -5,8 +5,8 @@
 // rota {titular} (POST /faturas/{mes}/upload/{titular}) usam o mesmo valor
 // (o próprio nome do enum, ex.: "Silvio"), então não há mais conversão
 // separada entre os dois como havia quando o corpo era número.
-export { Titular, QuemResponsavel, QuemBoleto, RegraAplicada } from './fatura.generated.ts';
-import type { Titular, QuemResponsavel, QuemBoleto, RegraAplicada } from './fatura.generated.ts';
+export { Titular, QuemResponsavel, QuemBoleto, RegraAplicada, MotivoSemEfeito } from './fatura.generated.ts';
+import type { Titular, QuemResponsavel, QuemBoleto, RegraAplicada, MotivoSemEfeito } from './fatura.generated.ts';
 
 // Espelha TransacaoResponse (src/api/Responses/TransacaoResponse.cs)
 export interface Transacao {
@@ -41,11 +41,21 @@ export interface ItemAcerto {
   regra: RegraAplicada;
 }
 
+// Espelha LancamentoSemEfeitoResponse
+export interface LancamentoSemEfeito {
+  descricao: string;
+  valor: number;
+  pagoPor: Titular;
+  motivo: MotivoSemEfeito;
+}
+
 // Espelha AcertoResponse
 export interface Acerto {
   quemDeve: Titular | null;
   valor: number;
   itens: ItemAcerto[];
+  // Lancamentos que nao geraram divida (preenchido no acerto do mes; vazio no acerto final)
+  lancamentosSemEfeito: LancamentoSemEfeito[];
 }
 
 // Espelha MesResponse (GET /faturas)
