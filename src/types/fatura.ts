@@ -41,11 +41,20 @@ export interface ItemAcerto {
   regra: RegraAplicada;
 }
 
+// Espelha AritmeticaAcertoResponse: subtotais calculados no dominio (o front nao recalcula)
+export interface AritmeticaAcerto {
+  subtotalClauciaDeve: number;
+  subtotalSilvioDeve: number;
+  // Diferenca absoluta entre os subtotais; quem deve e Acerto.quemDeve
+  diferenca: number;
+}
+
 // Espelha AcertoResponse
 export interface Acerto {
   quemDeve: Titular | null;
   valor: number;
   itens: ItemAcerto[];
+  aritmetica: AritmeticaAcerto;
 }
 
 // Espelha MesResponse (GET /faturas)

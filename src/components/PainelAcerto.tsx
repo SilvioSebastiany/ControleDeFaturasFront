@@ -36,6 +36,26 @@ function descreverItem(item: ItemAcerto): string {
   return `${original}${pagoPor}, ${ROTULO_REGRA[item.regra]} → ${efeito}`;
 }
 
+// "Claucia deve R$ 320,00 − Silvio deve R$ 120,00 = Claucia deve R$ 200,00". Os
+// subtotais e a diferença vêm prontos da API; aqui só se formata.
+function AritmeticaDoAcerto({ acerto, testId }: { acerto: Acerto; testId: string }) {
+  const { subtotalClauciaDeve, subtotalSilvioDeve, diferenca } = acerto.aritmetica;
+  const resultado =
+    acerto.quemDeve === null
+      ? 'Estão quites'
+      : `${ROTULO_TITULAR[acerto.quemDeve]} deve ${formatarValor(diferenca)}`;
+
+  return (
+    <div className="acerto-aritmetica" data-testid={testId}>
+      <p className="acerto-aritmetica-conta">
+        Claucia deve {formatarValor(subtotalClauciaDeve)} − Silvio deve{' '}
+        {formatarValor(subtotalSilvioDeve)} = {resultado}
+      </p>
+      <p className="acerto-aritmetica-nota">O arredondamento é feito uma vez, no fim.</p>
+    </div>
+  );
+}
+
 // Cartão de acerto expansível — clicar mostra os itens (transações, boletos,
 // acordos, pagamentos) que compõem o valor, igual ao accordion "Prestação de
 // Contas" do legado (js/totals.js#buildResumoView).
@@ -43,10 +63,12 @@ function CartaoAcerto({
   titulo,
   destaque,
   acerto,
+  idAritmetica,
 }: {
   titulo: string;
   destaque?: boolean;
   acerto: Acerto;
+  idAritmetica: string;
 }) {
   const [aberto, setAberto] = useState(false);
   const quites = acerto.valor < 0.01 || acerto.quemDeve === null;
@@ -81,6 +103,8 @@ function CartaoAcerto({
           ))}
         </ul>
       )}
+
+      {temItens && <AritmeticaDoAcerto acerto={acerto} testId={idAritmetica} />}
     </div>
   );
 }
@@ -94,8 +118,13 @@ export function PainelAcerto({ acertoFinalMes }: { acertoFinalMes: AcertoFinalMe
 
   return (
     <section className="painel-acerto">
-      <CartaoAcerto titulo="Acerto do mês" acerto={acerto} />
-      <CartaoAcerto titulo="Acerto final (com acordos e pagamentos)" destaque acerto={acertoFinal} />
+      <CartaoAcerto titulo="Acerto do mês" acerto={acerto} idAritmetica="aritmetica-acerto-mes" />
+      <CartaoAcerto
+        titulo="Acerto final (com acordos e pagamentos)"
+        destaque
+        acerto={acertoFinal}
+        idAritmetica="aritmetica-acerto-final"
+      />
 
       {transacoesNaoDefinidas.quantidade > 0 && (
         <p className="alerta-nd alerta-nd-resumo">
