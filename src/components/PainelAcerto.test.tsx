@@ -20,8 +20,15 @@ const acertoFinalMes: AcertoFinalMes = {
       },
     ],
     lancamentosSemEfeito: [],
+    aritmetica: { subtotalClauciaDeve: 50, subtotalSilvioDeve: 0, diferenca: 50 },
   },
-  acertoFinal: { quemDeve: null, valor: 0, itens: [], lancamentosSemEfeito: [] },
+  acertoFinal: {
+    quemDeve: null,
+    valor: 0,
+    itens: [],
+    lancamentosSemEfeito: [],
+    aritmetica: { subtotalClauciaDeve: 0, subtotalSilvioDeve: 0, diferenca: 0 },
+  },
   etapas: [],
   transacoesNaoDefinidas: { quantidade: 0, total: 0 },
 };
@@ -66,6 +73,7 @@ describe('PainelAcerto', () => {
               valor: Math.abs(item.valorEfeito),
               itens: [item],
               lancamentosSemEfeito: [],
+              aritmetica: { subtotalClauciaDeve: 0, subtotalSilvioDeve: 0, diferenca: 0 },
             },
             etapas: [],
           }}
@@ -226,12 +234,19 @@ describe('PainelAcerto', () => {
     };
 
     const comEtapas: AcertoFinalMes = {
-      acerto: { quemDeve: Titular.Silvio, valor: 50, itens: [mercado], lancamentosSemEfeito: [] },
+      acerto: {
+        quemDeve: Titular.Silvio,
+        valor: 50,
+        itens: [mercado],
+        lancamentosSemEfeito: [],
+        aritmetica: { subtotalClauciaDeve: 0, subtotalSilvioDeve: 50, diferenca: 50 },
+      },
       acertoFinal: {
         quemDeve: Titular.Claucia,
         valor: 150,
         itens: [mercado, apartamento, pix],
         lancamentosSemEfeito: [],
+        aritmetica: { subtotalClauciaDeve: 700, subtotalSilvioDeve: 550, diferenca: 150 },
       },
       etapas: [
         {
@@ -289,7 +304,13 @@ describe('PainelAcerto', () => {
     it('mostra "Estão quites" no saldo quando a etapa zera a divida', () => {
       const quites: AcertoFinalMes = {
         ...comEtapas,
-        acertoFinal: { quemDeve: null, valor: 0, itens: [], lancamentosSemEfeito: [] },
+        acertoFinal: {
+          quemDeve: null,
+          valor: 0,
+          itens: [],
+          lancamentosSemEfeito: [],
+          aritmetica: { subtotalClauciaDeve: 0, subtotalSilvioDeve: 0, diferenca: 0 },
+        },
         etapas: [
           comEtapas.etapas[0],
           { etapa: EtapaAcerto.AcordosFixos, itens: [], saldoAcumulado: { quemDeve: Titular.Silvio, valor: 50 } },
@@ -323,6 +344,87 @@ describe('PainelAcerto', () => {
       render(<PainelAcerto acertoFinalMes={comEtapas} />);
 
       expect(screen.getByText(/1 lançamento sem classificação/)).toBeInTheDocument();
+    });
+  });
+
+  describe('aritmetica do acerto', () => {
+    const itemQualquer = acertoFinalMes.acerto.itens[0];
+
+    it('mostra os subtotais e a diferenca no fim do acerto do mes, sem precisar abrir o detalhamento', () => {
+      render(
+        <PainelAcerto
+          acertoFinalMes={{
+            ...acertoFinalMes,
+            acerto: {
+              quemDeve: Titular.Claucia,
+              valor: 200,
+              itens: [itemQualquer],
+              lancamentosSemEfeito: [],
+              aritmetica: { subtotalClauciaDeve: 320, subtotalSilvioDeve: 120, diferenca: 200 },
+            },
+          }}
+        />,
+      );
+
+      expect(screen.getByTestId('aritmetica-acerto-mes')).toHaveTextContent(
+        'Claucia deve R$ 320,00 − Silvio deve R$ 120,00 = Claucia deve R$ 200,00',
+      );
+    });
+
+    it('mostra a aritmetica do acerto final, inclusive quando inverte quem deve', () => {
+      render(
+        <PainelAcerto
+          acertoFinalMes={{
+            ...acertoFinalMes,
+            acertoFinal: {
+              quemDeve: Titular.Silvio,
+              valor: 30,
+              itens: [itemQualquer],
+              lancamentosSemEfeito: [],
+              aritmetica: { subtotalClauciaDeve: 20, subtotalSilvioDeve: 50, diferenca: 30 },
+            },
+          }}
+        />,
+      );
+
+      expect(screen.getByTestId('aritmetica-acerto-final')).toHaveTextContent(
+        'Claucia deve R$ 20,00 − Silvio deve R$ 50,00 = Silvio deve R$ 30,00',
+      );
+    });
+
+    it('quites: explica o zero pela soma', () => {
+      render(
+        <PainelAcerto
+          acertoFinalMes={{
+            ...acertoFinalMes,
+            acerto: {
+              quemDeve: null,
+              valor: 0,
+              itens: [itemQualquer],
+              lancamentosSemEfeito: [],
+              aritmetica: { subtotalClauciaDeve: 50, subtotalSilvioDeve: 50, diferenca: 0 },
+            },
+          }}
+        />,
+      );
+
+      expect(screen.getByTestId('aritmetica-acerto-mes')).toHaveTextContent(
+        'Claucia deve R$ 50,00 − Silvio deve R$ 50,00 = Estão quites',
+      );
+    });
+
+    it('avisa que o arredondamento e feito uma vez, no fim', () => {
+      render(<PainelAcerto acertoFinalMes={acertoFinalMes} />);
+
+      expect(screen.getByTestId('aritmetica-acerto-mes')).toHaveTextContent(
+        'O arredondamento é feito uma vez, no fim.',
+      );
+    });
+
+    it('nao mostra aritmetica quando o acerto nao tem itens', () => {
+      render(<PainelAcerto acertoFinalMes={acertoFinalMes} />);
+
+      expect(screen.queryByTestId('aritmetica-acerto-final')).not.toBeInTheDocument();
     });
   });
 });

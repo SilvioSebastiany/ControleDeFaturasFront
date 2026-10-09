@@ -28,6 +28,17 @@ test.describe('Resumo do mês', () => {
     const acertoFinal = page.getByRole('button', { name: /Acerto final/ });
     await expect(acertoFinal).toContainText('Claucia deve R$ 60,00');
 
+    // Aritmética no fim de cada acerto (calculada pela API, o front só exibe).
+    await expect(page.getByTestId('aritmetica-acerto-mes')).toContainText(
+      'Claucia deve R$ 80,00 − Silvio deve R$ 0,00 = Claucia deve R$ 80,00',
+    );
+    await expect(page.getByTestId('aritmetica-acerto-final')).toContainText(
+      'Claucia deve R$ 80,00 − Silvio deve R$ 20,00 = Claucia deve R$ 60,00',
+    );
+    await expect(page.getByTestId('aritmetica-acerto-final')).toContainText(
+      'O arredondamento é feito uma vez, no fim.',
+    );
+
     // Farmácia ficou sem classificação.
     await expect(page.getByText(/1 lançamento sem classificação/)).toBeVisible();
 

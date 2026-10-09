@@ -62,6 +62,14 @@ export interface EtapaAcertoFinal {
   saldoAcumulado: SaldoAcerto;
 }
 
+// Espelha AritmeticaAcertoResponse: subtotais calculados no dominio (o front nao recalcula)
+export interface AritmeticaAcerto {
+  subtotalClauciaDeve: number;
+  subtotalSilvioDeve: number;
+  // Diferenca absoluta entre os subtotais; quem deve e Acerto.quemDeve
+  diferenca: number;
+}
+
 // Espelha AcertoResponse
 export interface Acerto {
   quemDeve: Titular | null;
@@ -69,6 +77,7 @@ export interface Acerto {
   itens: ItemAcerto[];
   // Lancamentos que nao geraram divida (preenchido no acerto do mes; vazio no acerto final)
   lancamentosSemEfeito: LancamentoSemEfeito[];
+  aritmetica: AritmeticaAcerto;
 }
 
 // Espelha MesResponse (GET /faturas)

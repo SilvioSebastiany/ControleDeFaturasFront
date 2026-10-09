@@ -229,6 +229,25 @@
   color: var(--text);
 }
 
+.acerto-aritmetica {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.acerto-aritmetica-conta {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.acerto-aritmetica-nota {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
 .alerta-nd-resumo {
   flex-basis: 100%;
 }
