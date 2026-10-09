@@ -78,13 +78,13 @@ function SecaoSemEfeito({ lancamentos }: { lancamentos: LancamentoSemEfeito[] })
 }
 
 function descreverSaldo(saldo: SaldoAcerto): string {
-  return saldo.quemDeve === null || saldo.valor < 0.01
+  return saldo.quemDeve === null
     ? 'Estão quites'
     : `${ROTULO_TITULAR[saldo.quemDeve]} deve ${formatarValor(saldo.valor)}`;
 }
 
 // Etapa do acerto final: itens que ela acrescenta e saldo acumulado depois dela.
-// Se o saldo muda de devedor (pagamento maior que a divida), explica a inversao.
+// Na etapa de Pagamentos, se o saldo muda de devedor (pagamento maior que a divida), explica a inversao.
 function EtapaDoAcerto({
   etapa,
   anterior,
@@ -94,6 +94,7 @@ function EtapaDoAcerto({
 }) {
   const { saldoAcumulado } = etapa;
   const inverteu =
+    etapa.etapa === EtapaAcerto.Pagamentos &&
     anterior?.quemDeve != null &&
     saldoAcumulado.quemDeve !== null &&
     anterior.quemDeve !== saldoAcumulado.quemDeve;
@@ -160,7 +161,7 @@ function CartaoAcerto({
   idAritmetica: string;
 }) {
   const [aberto, setAberto] = useState(abertoPorPadrao);
-  const quites = acerto.valor < 0.01 || acerto.quemDeve === null;
+  const quites = acerto.quemDeve === null;
   const temEtapas = etapas.length > 0;
   const temItens = acerto.itens.length > 0 || temEtapas;
 
@@ -210,7 +211,7 @@ function CartaoAcerto({
         </ul>
       )}
 
-      {temItens && <AritmeticaDoAcerto acerto={acerto} testId={idAritmetica} />}
+      <AritmeticaDoAcerto acerto={acerto} testId={idAritmetica} />
     </div>
   );
 }

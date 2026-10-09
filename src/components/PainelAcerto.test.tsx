@@ -301,6 +301,45 @@ describe('PainelAcerto', () => {
       expect(acordos).not.toHaveTextContent('maior que a dívida');
     });
 
+    it('nao explica "pagamento maior" quando um acordo fixo inverte quem deve', () => {
+      const inverteNoAcordo: AcertoFinalMes = {
+        ...comEtapas,
+        etapas: [
+          {
+            etapa: EtapaAcerto.AcertoDoMes,
+            itens: [mercado],
+            saldoAcumulado: { quemDeve: Titular.Claucia, valor: 50 },
+          },
+          {
+            etapa: EtapaAcerto.AcordosFixos,
+            itens: [apartamento],
+            saldoAcumulado: { quemDeve: Titular.Silvio, valor: 450 },
+          },
+          comEtapas.etapas[2],
+        ],
+      };
+      render(<PainelAcerto acertoFinalMes={inverteNoAcordo} />);
+
+      const [, acordos] = cartao(/Acerto final/).getAllByRole('region');
+      expect(acordos).toHaveTextContent('Saldo acumulado: Silvio deve R$ 450,00');
+      expect(acordos).not.toHaveTextContent('maior que a dívida');
+    });
+
+    it('confia em quemDeve para o saldo: valor minusculo com devedor nao vira "quites"', () => {
+      const minusculo: AcertoFinalMes = {
+        ...comEtapas,
+        etapas: [
+          comEtapas.etapas[0],
+          comEtapas.etapas[1],
+          { etapa: EtapaAcerto.Pagamentos, itens: [], saldoAcumulado: { quemDeve: Titular.Silvio, valor: 0.009 } },
+        ],
+      };
+      render(<PainelAcerto acertoFinalMes={minusculo} />);
+
+      const pagamentos = cartao(/Acerto final/).getAllByRole('region')[2];
+      expect(pagamentos).toHaveTextContent('Saldo acumulado: Silvio deve R$ 0,01');
+    });
+
     it('mostra "Estão quites" no saldo quando a etapa zera a divida', () => {
       const quites: AcertoFinalMes = {
         ...comEtapas,
@@ -421,10 +460,35 @@ describe('PainelAcerto', () => {
       );
     });
 
-    it('nao mostra aritmetica quando o acerto nao tem itens', () => {
+    it('mostra a aritmetica mesmo sem itens (0 = 0), para explicar o quites', () => {
       render(<PainelAcerto acertoFinalMes={acertoFinalMes} />);
 
-      expect(screen.queryByTestId('aritmetica-acerto-final')).not.toBeInTheDocument();
+      expect(screen.getByTestId('aritmetica-acerto-final')).toHaveTextContent(
+        'Claucia deve R$ 0,00 − Silvio deve R$ 0,00 = Estão quites',
+      );
+    });
+
+    it('mes que zera so por lancamentos sem efeito explica o quites', () => {
+      render(
+        <PainelAcerto
+          acertoFinalMes={{
+            ...acertoFinalMes,
+            acerto: {
+              quemDeve: null,
+              valor: 0,
+              itens: [],
+              lancamentosSemEfeito: [
+                { descricao: 'Github', valor: 54.28, pagoPor: Titular.Silvio, motivo: MotivoSemEfeito.PessoalDeQuemPagou },
+              ],
+              aritmetica: { subtotalClauciaDeve: 0, subtotalSilvioDeve: 0, diferenca: 0 },
+            },
+          }}
+        />,
+      );
+
+      expect(screen.getByTestId('aritmetica-acerto-mes')).toHaveTextContent(
+        'Claucia deve R$ 0,00 − Silvio deve R$ 0,00 = Estão quites',
+      );
     });
   });
 });
