@@ -1,5 +1,6 @@
 import type { APIRequestContext } from '@playwright/test';
 import { StandardFonts, PDFDocument } from 'pdf-lib';
+import type { AcordoFixo, DetalheMes, Transacao } from '../src/types/fatura.ts';
 
 // Seed do mês de teste usando só endpoints que já existem na API (sem endpoint
 // ou script de seed dedicado): upload de PDF, classificação manual e acordo
@@ -36,8 +37,10 @@ async function criarPdfFatura(linhas: { dia: string; descricao: string[]; valor:
 
 export async function limparMesDeTeste(request: APIRequestContext, mes: string) {
   await request.delete(`${API_URL}/faturas/${mes}`); // 404 se não existir: ok
-  const acordos = await (await request.get(`${API_URL}/acordos-fixos`)).json();
-  for (const acordo of acordos.filter((a: { descricao: string }) => a.descricao === DESCRICAO_ACORDO)) {
+  const resposta = await request.get(`${API_URL}/acordos-fixos`);
+  if (!resposta.ok()) throw new Error(`Listar acordos fixos falhou: ${resposta.status()}`);
+  const acordos = (await resposta.json()) as AcordoFixo[];
+  for (const acordo of acordos.filter((a) => a.descricao === DESCRICAO_ACORDO)) {
     await request.delete(`${API_URL}/acordos-fixos/${acordo.id}`);
   }
 }
@@ -55,11 +58,18 @@ export async function semearMesDeTeste(request: APIRequestContext, mes: string) 
   });
   if (!upload.ok()) throw new Error(`Upload falhou: ${upload.status()} ${await upload.text()}`);
 
-  const detalhe = await (await request.get(`${API_URL}/faturas/${mes}`)).json();
-  const mercado = detalhe.transacoes.find((t: { descricao: string }) => t.descricao.includes('Mercado'));
-  const presente = detalhe.transacoes.find((t: { descricao: string }) => t.descricao.includes('Presente'));
+  const detalheResposta = await request.get(`${API_URL}/faturas/${mes}`);
+  if (!detalheResposta.ok()) throw new Error(`Detalhe do mês falhou: ${detalheResposta.status()}`);
+  const detalhe = (await detalheResposta.json()) as DetalheMes;
+  const achar = (trecho: string): Transacao => {
+    const transacao = detalhe.transacoes.find((t) => t.descricao.includes(trecho));
+    if (!transacao) throw new Error(`Transação "${trecho}" não encontrada no mês semeado`);
+    return transacao;
+  };
+  const mercado = achar('Mercado');
+  const presente = achar('Presente');
   // Gasto pessoal de quem pagou (Silvio pagou, e é do Silvio): não gera dívida.
-  const assinatura = detalhe.transacoes.find((t: { descricao: string }) => t.descricao.includes('Assinatura'));
+  const assinatura = achar('Assinatura');
   for (const [transacao, quem] of [[mercado, 'Compartilhado'], [presente, 'Claucia'], [assinatura, 'Silvio']] as const) {
     const classificacao = await request.put(`${API_URL}/transacoes/${transacao.id}/classificacao`, {
       data: { quem },

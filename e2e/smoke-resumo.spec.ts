@@ -42,6 +42,9 @@ test.describe('Resumo do mês', () => {
     // Farmácia ficou sem classificação.
     await expect(page.getByText(/1 lançamento sem classificação/)).toBeVisible();
 
+    // O acerto do mes vem fechado por padrao (sem itens ate clicar).
+    await expect(page.getByRole('group', { name: /Acerto do mês/ }).getByRole('listitem')).toHaveCount(0);
+
     // Cada item mostra valor original, quem pagou, regra e efeito.
     await acertoDoMes.click();
     await expect(page.getByRole('group', { name: /Acerto do mês/ }).getByRole('listitem').filter({ hasText: 'Mercado Teste' })).toContainText(
@@ -77,15 +80,5 @@ test.describe('Resumo do mês', () => {
     // Ambos alternaveis: fecha o acerto final.
     await acertoFinal.click();
     await expect(etapas).toHaveCount(0);
-  });
-
-  test('acerto do mes vem fechado por padrao e o acerto final aberto', async ({ page }) => {
-    await page.goto('/');
-    await page.getByLabel('Mês').fill(mes);
-
-    const grupoMes = page.getByRole('group', { name: /Acerto do mês/ });
-    await expect(grupoMes).toContainText('Claucia deve R$ 80,00');
-    await expect(grupoMes.getByRole('listitem')).toHaveCount(0);
-    await expect(page.getByRole('group', { name: /Acerto final/ }).getByRole('region')).toHaveCount(3);
   });
 });
