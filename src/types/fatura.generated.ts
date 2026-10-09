@@ -44,3 +44,18 @@ export const QuemBoleto = {
 } as const satisfies Record<string, QuemBoleto>;
 
 export const QuemBoleto_VALORES: readonly QuemBoleto[] = ['Silvio', 'Claucia', 'Compartilhado', 'Fixo'];
+
+// RegraAplicada: os valores válidos que a API pode enviar/aceitar neste enum.
+export type RegraAplicada = 'MeioAMeio' | 'ValorFixo' | 'PessoalDoOutro' | 'AcordoFixo' | 'Pagamento';
+
+// Para usar como valor (ex.: Titular.Silvio) em vez de string crua — mesmo
+// resultado, só evita erro de digitação no call site.
+export const RegraAplicada = {
+  MeioAMeio: 'MeioAMeio',
+  ValorFixo: 'ValorFixo',
+  PessoalDoOutro: 'PessoalDoOutro',
+  AcordoFixo: 'AcordoFixo',
+  Pagamento: 'Pagamento',
+} as const satisfies Record<string, RegraAplicada>;
+
+export const RegraAplicada_VALORES: readonly RegraAplicada[] = ['MeioAMeio', 'ValorFixo', 'PessoalDoOutro', 'AcordoFixo', 'Pagamento'];

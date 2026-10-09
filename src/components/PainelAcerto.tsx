@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Titular } from '../types/fatura.ts';
-import type { Acerto, AcertoFinalMes } from '../types/fatura.ts';
+import { RegraAplicada, Titular } from '../types/fatura.ts';
+import type { Acerto, AcertoFinalMes, ItemAcerto } from '../types/fatura.ts';
 
 function formatarValor(valor: number): string {
   return 'R$ ' + Math.abs(valor).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -10,6 +10,31 @@ const ROTULO_TITULAR: Record<Titular, string> = {
   [Titular.Silvio]: 'Silvio',
   [Titular.Claucia]: 'Claucia',
 };
+
+const ROTULO_REGRA: Record<RegraAplicada, string> = {
+  [RegraAplicada.MeioAMeio]: '50/50',
+  [RegraAplicada.ValorFixo]: 'valor fixo',
+  [RegraAplicada.PessoalDoOutro]: 'pessoal do outro',
+  [RegraAplicada.AcordoFixo]: 'acordo fixo',
+  [RegraAplicada.Pagamento]: 'pagamento',
+};
+
+const PAGO_POR: Record<Titular, string> = {
+  [Titular.Silvio]: 'pelo Silvio',
+  [Titular.Claucia]: 'pela Claucia',
+};
+
+// "R$ 100,00 pago pela Claucia, 50/50 → Silvio deve R$ 50,00". Estorno (valor
+// negativo) inverte o efeito: "... → Claucia deve R$ 25,00 a menos".
+function descreverItem(item: ItemAcerto): string {
+  const estorno = item.valor < 0;
+  const original = (estorno ? 'estorno de ' : '') + formatarValor(item.valor);
+  const pagoPor = item.pagoPor ? ` pago ${PAGO_POR[item.pagoPor]}` : '';
+  const efeito =
+    `${ROTULO_TITULAR[item.quemDeve]} deve ${formatarValor(item.valorEfeito)}` +
+    (item.valorEfeito < 0 ? ' a menos' : '');
+  return `${original}${pagoPor}, ${ROTULO_REGRA[item.regra]} → ${efeito}`;
+}
 
 // Cartão de acerto expansível — clicar mostra os itens (transações, boletos,
 // acordos, pagamentos) que compõem o valor, igual ao accordion "Prestação de
@@ -51,9 +76,7 @@ function CartaoAcerto({
           {acerto.itens.map((item, i) => (
             <li key={i}>
               <span className="acerto-item-descricao">{item.descricao}</span>
-              <span className="acerto-item-valor">
-                {ROTULO_TITULAR[item.quemDeve]} deve {formatarValor(item.valorEfeito)}
-              </span>
+              <span className="acerto-item-valor">{descreverItem(item)}</span>
             </li>
           ))}
         </ul>

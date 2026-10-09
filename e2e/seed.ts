@@ -46,6 +46,7 @@ export async function semearMesDeTeste(request: APIRequestContext, mes: string) 
   const pdf = await criarPdfFatura([
     { dia: '01', descricao: ['Mercado', 'Teste'], valor: '100,00' },
     { dia: '02', descricao: ['Farmacia', 'Teste'], valor: '40,00' },
+    { dia: '03', descricao: ['Presente', 'Teste'], valor: '30,00' },
   ]);
 
   const upload = await request.post(`${API_URL}/faturas/${mes}/upload/Silvio`, {
@@ -55,10 +56,13 @@ export async function semearMesDeTeste(request: APIRequestContext, mes: string) 
 
   const detalhe = await (await request.get(`${API_URL}/faturas/${mes}`)).json();
   const mercado = detalhe.transacoes.find((t: { descricao: string }) => t.descricao.includes('Mercado'));
-  const classificacao = await request.put(`${API_URL}/transacoes/${mercado.id}/classificacao`, {
-    data: { quem: 'Compartilhado' },
-  });
-  if (!classificacao.ok()) throw new Error(`Classificação falhou: ${classificacao.status()}`);
+  const presente = detalhe.transacoes.find((t: { descricao: string }) => t.descricao.includes('Presente'));
+  for (const [transacao, quem] of [[mercado, 'Compartilhado'], [presente, 'Claucia']] as const) {
+    const classificacao = await request.put(`${API_URL}/transacoes/${transacao.id}/classificacao`, {
+      data: { quem },
+    });
+    if (!classificacao.ok()) throw new Error(`Classificação falhou: ${classificacao.status()}`);
+  }
 
   const acordo = await request.post(`${API_URL}/acordos-fixos`, {
     data: { descricao: DESCRICAO_ACORDO, devedor: 'Silvio', valor: 20 },
