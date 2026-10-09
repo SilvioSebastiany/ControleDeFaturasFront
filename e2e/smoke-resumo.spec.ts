@@ -33,16 +33,35 @@ test.describe('Resumo do mês', () => {
 
     // Cada item mostra valor original, quem pagou, regra e efeito.
     await acertoDoMes.click();
-    await expect(page.getByRole('listitem').filter({ hasText: 'Mercado Teste' })).toContainText(
+    await expect(page.getByRole('group', { name: /Acerto do mês/ }).getByRole('listitem').filter({ hasText: 'Mercado Teste' })).toContainText(
       'R$ 100,00 pago pelo Silvio, 50/50 → Claucia deve R$ 50,00',
     );
-    await expect(page.getByRole('listitem').filter({ hasText: 'Presente Teste' })).toContainText(
+    await expect(page.getByRole('group', { name: /Acerto do mês/ }).getByRole('listitem').filter({ hasText: 'Presente Teste' })).toContainText(
       'R$ 30,00 pago pelo Silvio, pessoal do outro → Claucia deve R$ 30,00',
     );
 
+    // O acerto final vem aberto por padrao (nao precisa clicar) e mostra as etapas
+    // com o saldo acumulado; o acerto do mes vem fechado e abre ao clicar (acima).
+    const etapas = page.getByRole('group', { name: /Acerto final/ }).getByRole('region');
+    await expect(etapas).toHaveCount(3);
+    await expect(etapas.nth(0)).toContainText('Saldo acumulado: Claucia deve R$ 80,00');
+    await expect(etapas.nth(1)).toContainText('R$ 20,00, acordo fixo → Silvio deve R$ 20,00');
+    await expect(etapas.nth(1)).toContainText('Saldo acumulado: Claucia deve R$ 60,00');
+    // Sem pagamento semeado (a API nao tem endpoint para criar): etapa vazia, mesmo saldo.
+    await expect(etapas.nth(2)).toContainText('Saldo acumulado: Claucia deve R$ 60,00');
+
+    // Ambos alternaveis: fecha o acerto final.
     await acertoFinal.click();
-    await expect(page.getByRole('listitem').filter({ hasText: 'Acordo E2E' })).toContainText(
-      'R$ 20,00, acordo fixo → Silvio deve R$ 20,00',
-    );
+    await expect(etapas).toHaveCount(0);
+  });
+
+  test('acerto do mes vem fechado por padrao e o acerto final aberto', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Mês').fill(mes);
+
+    const grupoMes = page.getByRole('group', { name: /Acerto do mês/ });
+    await expect(grupoMes).toContainText('Claucia deve R$ 80,00');
+    await expect(grupoMes.getByRole('listitem')).toHaveCount(0);
+    await expect(page.getByRole('group', { name: /Acerto final/ }).getByRole('region')).toHaveCount(3);
   });
 });

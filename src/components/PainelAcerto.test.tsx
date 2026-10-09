@@ -1,8 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { PainelAcerto } from './PainelAcerto.tsx';
-import { RegraAplicada, Titular } from '../types/fatura.ts';
+import { EtapaAcerto, RegraAplicada, Titular } from '../types/fatura.ts';
 import type { AcertoFinalMes } from '../types/fatura.ts';
 
 const acertoFinalMes: AcertoFinalMes = {
@@ -21,6 +21,7 @@ const acertoFinalMes: AcertoFinalMes = {
     ],
   },
   acertoFinal: { quemDeve: null, valor: 0, itens: [] },
+  etapas: [],
   transacoesNaoDefinidas: { quantidade: 0, total: 0 },
 };
 
@@ -60,6 +61,7 @@ describe('PainelAcerto', () => {
           acertoFinalMes={{
             ...acertoFinalMes,
             acerto: { quemDeve: item.quemDeve, valor: Math.abs(item.valorEfeito), itens: [item] },
+            etapas: [],
           }}
         />,
       );
@@ -149,6 +151,128 @@ describe('PainelAcerto', () => {
       expect(item).toHaveTextContent(
         'estorno de R$ 50,00 pago pelo Silvio, 50/50 → Claucia deve R$ 25,00 a menos',
       );
+    });
+  });
+
+  describe('acerto final em etapas', () => {
+    const mercado = {
+      descricao: 'Mercado',
+      valor: 100,
+      quemDeve: Titular.Silvio,
+      valorEfeito: 50,
+      pagoPor: Titular.Claucia,
+      regra: RegraAplicada.MeioAMeio,
+    };
+    const apartamento = {
+      descricao: 'Apartamento',
+      valor: 500,
+      quemDeve: Titular.Silvio,
+      valorEfeito: 500,
+      pagoPor: null,
+      regra: RegraAplicada.AcordoFixo,
+    };
+    const pix = {
+      descricao: 'Pagamento',
+      valor: 700,
+      quemDeve: Titular.Claucia,
+      valorEfeito: 700,
+      pagoPor: Titular.Silvio,
+      regra: RegraAplicada.Pagamento,
+    };
+
+    const comEtapas: AcertoFinalMes = {
+      acerto: { quemDeve: Titular.Silvio, valor: 50, itens: [mercado] },
+      acertoFinal: { quemDeve: Titular.Claucia, valor: 150, itens: [mercado, apartamento, pix] },
+      etapas: [
+        {
+          etapa: EtapaAcerto.AcertoDoMes,
+          itens: [mercado],
+          saldoAcumulado: { quemDeve: Titular.Silvio, valor: 50 },
+        },
+        {
+          etapa: EtapaAcerto.AcordosFixos,
+          itens: [apartamento],
+          saldoAcumulado: { quemDeve: Titular.Silvio, valor: 550 },
+        },
+        {
+          etapa: EtapaAcerto.Pagamentos,
+          itens: [pix],
+          saldoAcumulado: { quemDeve: Titular.Claucia, valor: 150 },
+        },
+      ],
+      transacoesNaoDefinidas: { quantidade: 1, total: 30 },
+    };
+
+    function cartao(nome: RegExp) {
+      return within(screen.getByRole('group', { name: nome }));
+    }
+
+    it('mostra as etapas com itens e saldo acumulado, aberto por padrao', () => {
+      render(<PainelAcerto acertoFinalMes={comEtapas} />);
+
+      const final = cartao(/Acerto final/);
+      const etapas = final.getAllByRole('region');
+      expect(etapas).toHaveLength(3);
+
+      expect(etapas[0]).toHaveTextContent('Acerto do mês');
+      expect(etapas[0]).toHaveTextContent('Mercado');
+      expect(etapas[0]).toHaveTextContent('Saldo acumulado: Silvio deve R$ 50,00');
+
+      expect(etapas[1]).toHaveTextContent('Acordos fixos');
+      expect(etapas[1]).toHaveTextContent('Apartamento');
+      expect(etapas[1]).toHaveTextContent('Saldo acumulado: Silvio deve R$ 550,00');
+
+      expect(etapas[2]).toHaveTextContent('Pagamentos');
+      expect(etapas[2]).toHaveTextContent('R$ 700,00 pago pelo Silvio, pagamento → Claucia deve R$ 700,00');
+      expect(etapas[2]).toHaveTextContent('Saldo acumulado: Claucia deve R$ 150,00');
+    });
+
+    it('explica a inversao quando o pagamento supera a divida', () => {
+      render(<PainelAcerto acertoFinalMes={comEtapas} />);
+
+      const [mes, acordos, pagamentos] = cartao(/Acerto final/).getAllByRole('region');
+      expect(pagamentos).toHaveTextContent('Pagamento maior que a dívida: agora Claucia deve');
+      expect(mes).not.toHaveTextContent('maior que a dívida');
+      expect(acordos).not.toHaveTextContent('maior que a dívida');
+    });
+
+    it('mostra "Estão quites" no saldo quando a etapa zera a divida', () => {
+      const quites: AcertoFinalMes = {
+        ...comEtapas,
+        acertoFinal: { quemDeve: null, valor: 0, itens: [] },
+        etapas: [
+          comEtapas.etapas[0],
+          { etapa: EtapaAcerto.AcordosFixos, itens: [], saldoAcumulado: { quemDeve: Titular.Silvio, valor: 50 } },
+          { etapa: EtapaAcerto.Pagamentos, itens: [], saldoAcumulado: { quemDeve: null, valor: 0 } },
+        ],
+      };
+      render(<PainelAcerto acertoFinalMes={quites} />);
+
+      const pagamentos = cartao(/Acerto final/).getAllByRole('region')[2];
+      expect(pagamentos).toHaveTextContent('Saldo acumulado: Estão quites');
+    });
+
+    it('detalhamento do acerto final vem aberto e o do acerto do mes vem fechado', () => {
+      render(<PainelAcerto acertoFinalMes={comEtapas} />);
+
+      expect(cartao(/Acerto final/).getAllByRole('region')).toHaveLength(3);
+      expect(cartao(/Acerto do mês/).queryByText('Mercado')).not.toBeInTheDocument();
+    });
+
+    it('permite fechar o acerto final e abrir o acerto do mes', async () => {
+      render(<PainelAcerto acertoFinalMes={comEtapas} />);
+
+      await userEvent.click(screen.getByRole('button', { name: /Acerto final/ }));
+      expect(cartao(/Acerto final/).queryAllByRole('region')).toHaveLength(0);
+
+      await userEvent.click(screen.getByRole('button', { name: /Acerto do mês/ }));
+      expect(cartao(/Acerto do mês/).getByText('Mercado')).toBeInTheDocument();
+    });
+
+    it('continua mostrando o alerta de lancamentos nao classificados', () => {
+      render(<PainelAcerto acertoFinalMes={comEtapas} />);
+
+      expect(screen.getByText(/1 lançamento sem classificação/)).toBeInTheDocument();
     });
   });
 });

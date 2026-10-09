@@ -59,3 +59,16 @@ export const RegraAplicada = {
 } as const satisfies Record<string, RegraAplicada>;
 
 export const RegraAplicada_VALORES: readonly RegraAplicada[] = ['MeioAMeio', 'ValorFixo', 'PessoalDoOutro', 'AcordoFixo', 'Pagamento'];
+
+// EtapaAcerto: os valores válidos que a API pode enviar/aceitar neste enum.
+export type EtapaAcerto = 'AcertoDoMes' | 'AcordosFixos' | 'Pagamentos';
+
+// Para usar como valor (ex.: Titular.Silvio) em vez de string crua — mesmo
+// resultado, só evita erro de digitação no call site.
+export const EtapaAcerto = {
+  AcertoDoMes: 'AcertoDoMes',
+  AcordosFixos: 'AcordosFixos',
+  Pagamentos: 'Pagamentos',
+} as const satisfies Record<string, EtapaAcerto>;
+
+export const EtapaAcerto_VALORES: readonly EtapaAcerto[] = ['AcertoDoMes', 'AcordosFixos', 'Pagamentos'];
