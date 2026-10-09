@@ -194,6 +194,41 @@
   gap: 12px;
 }
 
+.acerto-etapas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.acerto-etapa .acerto-itens {
+  margin: 4px 0 0;
+  padding: 0;
+  border-top: none;
+}
+
+.acerto-etapa-titulo {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.acerto-etapa-saldo {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.acerto-etapa-inversao {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
 .alerta-nd-resumo {
   flex-basis: 100%;
 }
