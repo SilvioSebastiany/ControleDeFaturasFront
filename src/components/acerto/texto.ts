@@ -1,4 +1,5 @@
-import type { ItemAcerto, LancamentoSemEfeito, SaldoAcerto } from '../../types/fatura.ts';
+import { OrigemItemFatura, Titular } from '../../types/fatura.ts';
+import type { ItemAcerto, ItemFatura, LancamentoSemEfeito, SaldoAcerto } from '../../types/fatura.ts';
 import { PAGO_POR, ROTULO_MOTIVO, ROTULO_REGRA, ROTULO_TITULAR } from './rotulos.ts';
 
 // Valor sem sinal: a direção ("X deve", "estorno de", "a menos") vai no texto.
@@ -22,6 +23,25 @@ export function descreverItem(item: ItemAcerto): string {
 // "R$ 54,28 pago pelo Silvio, gasto pessoal de quem pagou"
 export function descreverSemEfeito(l: LancamentoSemEfeito): string {
   return `${formatarValorAbsoluto(l.valor)} pago ${PAGO_POR[l.pagoPor]}, ${ROTULO_MOTIVO[l.motivo]}`;
+}
+
+function outroTitular(titular: Titular): Titular {
+  return titular === Titular.Silvio ? Titular.Claucia : Titular.Silvio;
+}
+
+// "pessoal dele/dela" é o gasto de quem pagou; "pessoal de X" é o do outro, que saiu no
+// cartão de quem pagou (e gera dívida).
+export function descreverOrigem(item: ItemFatura, pagante: Titular): string {
+  switch (item.origem) {
+    case OrigemItemFatura.Compartilhado:
+      return 'compartilhado';
+    case OrigemItemFatura.PessoalProprio:
+      return pagante === Titular.Silvio ? 'pessoal dele' : 'pessoal dela';
+    case OrigemItemFatura.PessoalDoOutro:
+      return `pessoal de ${ROTULO_TITULAR[outroTitular(pagante)]}`;
+    case OrigemItemFatura.SemCategoria:
+      return 'sem categoria';
+  }
 }
 
 export function descreverSaldo(saldo: SaldoAcerto): string {

@@ -52,6 +52,24 @@ test.describe('Resumo do mês', () => {
     });
     expect(alertaAntesDoCartao).toBe(true);
 
+    // Prestação de contas: um bloco por quem pagou, Claucia primeiro. Tudo está no cartão
+    // do Silvio (a Claucia não lançou nada).
+    const prestacao = page.getByRole('region', { name: 'Prestação de contas' });
+    const blocoClaucia = prestacao.getByRole('region', { name: 'Claucia pagou' });
+    await expect(blocoClaucia).toContainText('Nenhum gasto lançado ainda.');
+    const blocoSilvio = prestacao.getByRole('region', { name: 'Silvio pagou' });
+    const fatura = blocoSilvio.getByRole('button', { name: /Fatura do cartão/ });
+    await expect(fatura).toContainText('R$ 195,00');
+    await expect(fatura).toHaveAttribute('aria-expanded', 'false');
+    await expect(blocoSilvio.getByText('Total desembolsado').locator('..')).toContainText('R$ 195,00');
+    await fatura.click();
+    const itensFatura = blocoSilvio.getByRole('listitem');
+    await expect(itensFatura).toHaveCount(4);
+    await expect(itensFatura.filter({ hasText: 'Mercado Teste' })).toContainText('compartilhado');
+    await expect(itensFatura.filter({ hasText: 'Presente Teste' })).toContainText('pessoal de Claucia');
+    await expect(itensFatura.filter({ hasText: 'Assinatura Pessoal' })).toContainText('pessoal dele');
+    await expect(itensFatura.filter({ hasText: 'Farmacia Teste' })).toContainText('sem categoria');
+
     // O acerto do mes vem fechado por padrao (sem itens ate clicar).
     await expect(page.getByRole('group', { name: /Acerto do mês/ }).getByRole('listitem')).toHaveCount(0);
 
@@ -73,9 +91,11 @@ test.describe('Resumo do mês', () => {
     await expect(semEfeito.getByRole('listitem')).toContainText(
       'R$ 25,00 pago pelo Silvio, gasto pessoal de quem pagou',
     );
+    // Fora da lista principal do acerto do mês (a prestação de contas, que lista tudo o que
+    // saiu na fatura, é outra seção).
     await expect(
-      page.getByRole('listitem').filter({ hasText: 'Assinatura Pessoal' }),
-    ).toHaveCount(1);
+      page.getByRole('group', { name: /Acerto do mês/ }).getByRole('listitem').filter({ hasText: 'Assinatura Pessoal' }),
+    ).toHaveCount(0);
 
     // O acerto final vem aberto por padrao (nao precisa clicar) e mostra as etapas
     // com o saldo acumulado; o acerto do mes vem fechado e abre ao clicar (acima).

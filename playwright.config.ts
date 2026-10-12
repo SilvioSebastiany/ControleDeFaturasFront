@@ -8,6 +8,11 @@ import { defineConfig, devices } from '@playwright/test';
 //
 // API_DIR: pasta do repo Controle-de-Faturas (default: irmã deste repo).
 const apiDir = path.resolve(process.env.API_DIR ?? '../Controle-de-Faturas');
+// API_ARTIFACTS: pasta de saída do build da API. Útil quando a API de desenvolvimento está
+// rodando (ela trava as DLLs em bin/ e o build do teste falha).
+const apiArtifacts = process.env.API_ARTIFACTS
+  ? ` --artifacts-path "${path.resolve(process.env.API_ARTIFACTS)}"`
+  : '';
 const apiUrl = 'http://localhost:5126';
 const frontUrl = 'http://localhost:5174';
 
@@ -25,7 +30,7 @@ export default defineConfig({
     {
       // Development carrega os user-secrets (senha do Postgres); BancoDeDados
       // troca só o database e aplica as migrations (ver Program.cs da API).
-      command: 'dotnet run --project src/api --no-launch-profile',
+      command: `dotnet run --project src/api --no-launch-profile${apiArtifacts}`,
       cwd: apiDir,
       url: `${apiUrl}/faturas`,
       env: {

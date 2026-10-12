@@ -38,6 +38,13 @@ test.describe('Resumo do mês: visual', () => {
         await acertoDoMes.click();
         await expect(page.getByRole('region', { name: 'Lançamentos sem efeito' })).toBeVisible();
 
+        // Abre a fatura do Silvio na prestação de contas para a captura mostrar os itens.
+        await page
+          .getByRole('region', { name: 'Silvio pagou' })
+          .getByRole('button', { name: /Fatura do cartão/ })
+          .click();
+        await expect(page.getByRole('region', { name: 'Silvio pagou' }).getByRole('listitem')).toHaveCount(4);
+
         // A barra inferior é fixa; na captura de página inteira ela ficaria no meio.
         // Posicionada no fim, mostra como a tela aparece ao rolar até o final.
         await page.addStyleTag({ content: '.bottom-nav { position: static !important; }' });

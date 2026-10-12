@@ -84,3 +84,17 @@ export const EtapaAcerto = {
 } as const satisfies Record<string, EtapaAcerto>;
 
 export const EtapaAcerto_VALORES: readonly EtapaAcerto[] = ['AcertoDoMes', 'AcordosFixos', 'Pagamentos'];
+
+// OrigemItemFatura: os valores válidos que a API pode enviar/aceitar neste enum.
+export type OrigemItemFatura = 'Compartilhado' | 'PessoalProprio' | 'PessoalDoOutro' | 'SemCategoria';
+
+// Para usar como valor (ex.: Titular.Silvio) em vez de string crua — mesmo
+// resultado, só evita erro de digitação no call site.
+export const OrigemItemFatura = {
+  Compartilhado: 'Compartilhado',
+  PessoalProprio: 'PessoalProprio',
+  PessoalDoOutro: 'PessoalDoOutro',
+  SemCategoria: 'SemCategoria',
+} as const satisfies Record<string, OrigemItemFatura>;
+
+export const OrigemItemFatura_VALORES: readonly OrigemItemFatura[] = ['Compartilhado', 'PessoalProprio', 'PessoalDoOutro', 'SemCategoria'];

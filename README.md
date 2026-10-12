@@ -38,4 +38,6 @@ See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rule
   (banco `controle_de_faturas_test`, porta 5126) e o Vite (porta 5174); nao usa o
   `launch.json`. Pre-requisitos: Postgres local e user-secrets da API configurados;
   uma vez, `npx playwright install chromium`. A API e procurada em `../Controle-de-Faturas`
-  (ou na pasta indicada em `API_DIR`).
+  (ou na pasta indicada em `API_DIR`). Se a API de desenvolvimento estiver rodando (ela
+  trava as DLLs em `bin/`), defina `API_ARTIFACTS` com uma pasta de saida do build para o teste
+  nao disputar esses arquivos.

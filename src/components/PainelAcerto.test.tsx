@@ -31,6 +31,7 @@ const acertoFinalMes: AcertoFinalMes = {
   },
   etapas: [],
   transacoesNaoDefinidas: { quantidade: 0, total: 0, porCartao: [] },
+  prestacaoDeContas: [],
 };
 
 describe('PainelAcerto', () => {
@@ -342,6 +343,7 @@ describe('PainelAcerto', () => {
         total: 30,
         porCartao: [{ titular: Titular.Silvio, quantidade: 1, total: 30 }],
       },
+      prestacaoDeContas: [],
     };
 
     function cartao(nome: RegExp) {

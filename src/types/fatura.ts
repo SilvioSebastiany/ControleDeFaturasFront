@@ -5,8 +5,24 @@
 // rota {titular} (POST /faturas/{mes}/upload/{titular}) usam o mesmo valor
 // (o próprio nome do enum, ex.: "Silvio"), então não há mais conversão
 // separada entre os dois como havia quando o corpo era número.
-export { Titular, QuemResponsavel, QuemBoleto, RegraAplicada, MotivoSemEfeito, EtapaAcerto } from './fatura.generated.ts';
-import type { Titular, QuemResponsavel, QuemBoleto, RegraAplicada, MotivoSemEfeito, EtapaAcerto } from './fatura.generated.ts';
+export {
+  Titular,
+  QuemResponsavel,
+  QuemBoleto,
+  RegraAplicada,
+  MotivoSemEfeito,
+  EtapaAcerto,
+  OrigemItemFatura,
+} from './fatura.generated.ts';
+import type {
+  Titular,
+  QuemResponsavel,
+  QuemBoleto,
+  RegraAplicada,
+  MotivoSemEfeito,
+  EtapaAcerto,
+  OrigemItemFatura,
+} from './fatura.generated.ts';
 
 // Espelha TransacaoResponse (src/api/Responses/TransacaoResponse.cs)
 export interface Transacao {
@@ -150,6 +166,29 @@ export interface AlertaTransacoesNaoDefinidas {
   porCartao: PendenciaCartao[];
 }
 
+// Espelha ItemFaturaResponse: uma transação da fatura de quem pagou, com a origem que
+// explica por que entra na conta
+export interface ItemFatura {
+  descricao: string;
+  valor: number;
+  origem: OrigemItemFatura;
+}
+
+// Espelha BoletoPagoResponse
+export interface BoletoPago {
+  descricao: string;
+  valor: number;
+}
+
+// Espelha BlocoPaganteResponse: o que um titular pagou no mês (prestação de contas)
+export interface BlocoPagante {
+  pagante: Titular;
+  itensFatura: ItemFatura[];
+  faturaTotal: number;
+  boletosPagos: BoletoPago[];
+  totalDesembolsado: number;
+}
+
 // Espelha AcertoFinalMesResponse (GET /faturas/{mes}/acerto-final)
 export interface AcertoFinalMes {
   acerto: Acerto;
@@ -157,4 +196,5 @@ export interface AcertoFinalMes {
   // Acerto do mes -> acordos fixos -> pagamentos; a ultima coincide com acertoFinal
   etapas: EtapaAcertoFinal[];
   transacoesNaoDefinidas: AlertaTransacoesNaoDefinidas;
+  prestacaoDeContas: BlocoPagante[];
 }
