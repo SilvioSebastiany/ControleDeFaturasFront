@@ -30,3 +30,12 @@ If you are developing a production application, we recommend enabling type-aware
 ```
 
 See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+
+## Testes
+
+- `npm test`: testes de componente (Vitest + Testing Library, `src/**/*.test.tsx`).
+- `npm run test:e2e`: E2E (Playwright, `e2e/`). Sobe sozinho a API em modo de teste
+  (banco `controle_de_faturas_test`, porta 5126) e o Vite (porta 5174); nao usa o
+  `launch.json`. Pre-requisitos: Postgres local e user-secrets da API configurados;
+  uma vez, `npx playwright install chromium`. A API e procurada em `../Controle-de-Faturas`
+  (ou na pasta indicada em `API_DIR`).

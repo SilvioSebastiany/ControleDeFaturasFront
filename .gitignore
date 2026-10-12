@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Playwright
+test-results
+playwright-report
+
+# Prints do teste visual (gerados a cada execucao)
+e2e/capturas
