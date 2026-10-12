@@ -586,3 +586,23 @@
 .erro-carregamento {
   color: #d1242f;
 }
+
+/* Celular: as frases dos itens do acerto são longas ("R$ 30,00 pago pelo Silvio,
+   pessoal do outro → Claucia deve R$ 30,00"); quebram de linha em vez de
+   estourar a largura da tela. */
+@media (max-width: 600px) {
+  .acerto-card {
+    min-width: 0;
+  }
+
+  .acerto-itens li,
+  .sem-efeito-lista li {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .acerto-item-valor {
+    white-space: normal;
+    text-align: left;
+  }
+}
