@@ -184,7 +184,10 @@ export function FaturaMes() {
 
       {aba === 'resumo' &&
         (acertoFinalMes ? (
-          <PainelAcerto acertoFinalMes={acertoFinalMes} />
+          <PainelAcerto
+            acertoFinalMes={acertoFinalMes}
+            onIrParaCartao={(titular) => setAba(titular === Titular.Silvio ? 'silvio' : 'claucia')}
+          />
         ) : (
           <p className="config-vazio">Nenhuma fatura importada neste mês ainda.</p>
         ))}

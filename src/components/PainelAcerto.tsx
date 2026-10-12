@@ -3,6 +3,7 @@ import { EtapaAcerto, MotivoSemEfeito, RegraAplicada, Titular } from '../types/f
 import type {
   Acerto,
   AcertoFinalMes,
+  AlertaTransacoesNaoDefinidas,
   EtapaAcertoFinal,
   ItemAcerto,
   LancamentoSemEfeito,
@@ -216,15 +217,56 @@ function CartaoAcerto({
   );
 }
 
+// Alerta no topo do Resumo: quantos lançamentos faltam classificar e quanto somam,
+// com um atalho para a aba de cada cartão que tem pendência.
+function AlertaSemCategoria({
+  alerta,
+  onIrParaCartao,
+}: {
+  alerta: AlertaTransacoesNaoDefinidas;
+  onIrParaCartao?: (titular: Titular) => void;
+}) {
+  if (alerta.quantidade === 0) return null;
+  return (
+    <div className="pendencia-resumo" role="status">
+      <p className="pendencia-texto">
+        <strong>
+          {alerta.quantidade} lançamento{alerta.quantidade > 1 ? 's' : ''} sem categoria
+        </strong>
+        {formatarValor(alerta.total)} aguardando classificação
+      </p>
+      <div className="pendencia-atalhos">
+        {alerta.porCartao.map((p) => (
+          <button
+            key={p.titular}
+            type="button"
+            className="pendencia-btn"
+            onClick={() => onIrParaCartao?.(p.titular)}
+          >
+            Cartão {ROTULO_TITULAR[p.titular]} →
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // Painel de acerto do mês (substitui parte de js/totals.js#renderTotals) —
 // mostra o acerto normal, o acerto final (com acordos fixos e pagamentos,
 // T13), o alerta de transações ainda sem classificação (nd) e o
 // detalhamento por item de cada acerto (accordion, igual ao legado).
-export function PainelAcerto({ acertoFinalMes }: { acertoFinalMes: AcertoFinalMes }) {
+export function PainelAcerto({
+  acertoFinalMes,
+  onIrParaCartao,
+}: {
+  acertoFinalMes: AcertoFinalMes;
+  onIrParaCartao?: (titular: Titular) => void;
+}) {
   const { acerto, acertoFinal, etapas, transacoesNaoDefinidas } = acertoFinalMes;
 
   return (
     <section className="painel-acerto">
+      <AlertaSemCategoria alerta={transacoesNaoDefinidas} onIrParaCartao={onIrParaCartao} />
       <CartaoAcerto
         titulo="Acerto do mês"
         acerto={acerto}
@@ -239,15 +281,6 @@ export function PainelAcerto({ acertoFinalMes }: { acertoFinalMes: AcertoFinalMe
         idAritmetica="aritmetica-acerto-final"
       />
       <SecaoSemEfeito lancamentos={acerto.lancamentosSemEfeito} />
-
-      {transacoesNaoDefinidas.quantidade > 0 && (
-        <p className="alerta-nd alerta-nd-resumo">
-          ⚠️ {transacoesNaoDefinidas.quantidade} lançamento
-          {transacoesNaoDefinidas.quantidade > 1 ? 's' : ''} sem classificação (
-          {formatarValor(transacoesNaoDefinidas.total)}) — o acerto acima ainda não considera{' '}
-          {transacoesNaoDefinidas.quantidade > 1 ? 'eles' : 'ele'}.
-        </p>
-      )}
     </section>
   );
 }

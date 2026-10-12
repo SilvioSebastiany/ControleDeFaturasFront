@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { PainelAcerto } from './PainelAcerto.tsx';
 import { EtapaAcerto, MotivoSemEfeito, RegraAplicada, Titular } from '../types/fatura.ts';
 import type { AcertoFinalMes } from '../types/fatura.ts';
@@ -30,7 +30,7 @@ const acertoFinalMes: AcertoFinalMes = {
     aritmetica: { subtotalClauciaDeve: 0, subtotalSilvioDeve: 0, diferenca: 0 },
   },
   etapas: [],
-  transacoesNaoDefinidas: { quantidade: 0, total: 0 },
+  transacoesNaoDefinidas: { quantidade: 0, total: 0, porCartao: [] },
 };
 
 describe('PainelAcerto', () => {
@@ -52,14 +52,86 @@ describe('PainelAcerto', () => {
     expect(screen.getByText('Mercado')).toBeInTheDocument();
   });
 
-  it('avisa quando há lançamentos sem classificação', () => {
-    render(
-      <PainelAcerto
-        acertoFinalMes={{ ...acertoFinalMes, transacoesNaoDefinidas: { quantidade: 2, total: 40 } }}
-      />,
-    );
+  describe('alerta de lançamentos sem categoria', () => {
+    const comPendencias: AcertoFinalMes = {
+      ...acertoFinalMes,
+      transacoesNaoDefinidas: {
+        quantidade: 2,
+        total: 40,
+        porCartao: [
+          { titular: Titular.Silvio, quantidade: 1, total: 25 },
+          { titular: Titular.Claucia, quantidade: 1, total: 15 },
+        ],
+      },
+    };
 
-    expect(screen.getByText(/2 lançamentos sem classificação/)).toBeInTheDocument();
+    it('mostra quantos faltam classificar e quanto somam', () => {
+      render(<PainelAcerto acertoFinalMes={comPendencias} />);
+
+      const alerta = screen.getByRole('status');
+      expect(alerta).toHaveTextContent('2 lançamentos sem categoria');
+      expect(alerta).toHaveTextContent('R$ 40,00 aguardando classificação');
+    });
+
+    it('usa o singular quando falta só um', () => {
+      render(
+        <PainelAcerto
+          acertoFinalMes={{
+            ...acertoFinalMes,
+            transacoesNaoDefinidas: {
+              quantidade: 1,
+              total: 25,
+              porCartao: [{ titular: Titular.Silvio, quantidade: 1, total: 25 }],
+            },
+          }}
+        />,
+      );
+
+      expect(screen.getByRole('status')).toHaveTextContent('1 lançamento sem categoria');
+    });
+
+    it('fica acima dos cartões de acerto', () => {
+      render(<PainelAcerto acertoFinalMes={comPendencias} />);
+
+      const alerta = screen.getByRole('status');
+      const cartao = screen.getByRole('group', { name: /Acerto do mês/ });
+      expect(alerta.compareDocumentPosition(cartao) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('oferece um atalho para cada cartão com pendência', async () => {
+      const aoIr = vi.fn();
+      render(<PainelAcerto acertoFinalMes={comPendencias} onIrParaCartao={aoIr} />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Cartão Silvio →' }));
+      expect(aoIr).toHaveBeenLastCalledWith(Titular.Silvio);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Cartão Claucia →' }));
+      expect(aoIr).toHaveBeenLastCalledWith(Titular.Claucia);
+    });
+
+    it('só mostra o atalho do cartão que tem pendência', () => {
+      render(
+        <PainelAcerto
+          acertoFinalMes={{
+            ...acertoFinalMes,
+            transacoesNaoDefinidas: {
+              quantidade: 1,
+              total: 25,
+              porCartao: [{ titular: Titular.Silvio, quantidade: 1, total: 25 }],
+            },
+          }}
+        />,
+      );
+
+      expect(screen.getByRole('button', { name: 'Cartão Silvio →' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Cartão Claucia →' })).not.toBeInTheDocument();
+    });
+
+    it('não aparece quando não há pendências', () => {
+      render(<PainelAcerto acertoFinalMes={acertoFinalMes} />);
+
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
   });
 
   describe('item do acerto', () => {
@@ -265,7 +337,11 @@ describe('PainelAcerto', () => {
           saldoAcumulado: { quemDeve: Titular.Claucia, valor: 150 },
         },
       ],
-      transacoesNaoDefinidas: { quantidade: 1, total: 30 },
+      transacoesNaoDefinidas: {
+        quantidade: 1,
+        total: 30,
+        porCartao: [{ titular: Titular.Silvio, quantidade: 1, total: 30 }],
+      },
     };
 
     function cartao(nome: RegExp) {
@@ -382,7 +458,7 @@ describe('PainelAcerto', () => {
     it('continua mostrando o alerta de lancamentos nao classificados', () => {
       render(<PainelAcerto acertoFinalMes={comEtapas} />);
 
-      expect(screen.getByText(/1 lançamento sem classificação/)).toBeInTheDocument();
+      expect(screen.getByRole('status')).toHaveTextContent('1 lançamento sem categoria');
     });
   });
 

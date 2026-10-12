@@ -39,8 +39,18 @@ test.describe('Resumo do mês', () => {
       'O arredondamento é feito uma vez, no fim.',
     );
 
-    // Farmácia ficou sem classificação.
-    await expect(page.getByText(/1 lançamento sem classificação/)).toBeVisible();
+    // Farmácia (cartão do Silvio) ficou sem categoria: alerta no topo, acima dos cartões
+    // de acerto, com atalho só para o cartão que tem pendência.
+    const alerta = page.getByRole('status');
+    await expect(alerta).toContainText('1 lançamento sem categoria');
+    await expect(alerta).toContainText('R$ 40,00 aguardando classificação');
+    await expect(alerta.getByRole('button', { name: 'Cartão Claucia →' })).toHaveCount(0);
+    const alertaAntesDoCartao = await page.evaluate(() => {
+      const a = document.querySelector('.pendencia-resumo');
+      const c = document.querySelector('.acerto-card');
+      return !!a && !!c && !!(a.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+    expect(alertaAntesDoCartao).toBe(true);
 
     // O acerto do mes vem fechado por padrao (sem itens ate clicar).
     await expect(page.getByRole('group', { name: /Acerto do mês/ }).getByRole('listitem')).toHaveCount(0);
@@ -80,5 +90,9 @@ test.describe('Resumo do mês', () => {
     // Ambos alternaveis: fecha o acerto final.
     await acertoFinal.click();
     await expect(etapas).toHaveCount(0);
+
+    // O atalho do alerta leva à aba do cartão.
+    await alerta.getByRole('button', { name: 'Cartão Silvio →' }).click();
+    await expect(page.locator('.aba.active')).toContainText('Silvio');
   });
 });

@@ -136,10 +136,18 @@ export interface AcordoFixo {
   valor: number;
 }
 
+// Espelha PendenciaCartaoResponse: pendências de um cartão (só os que têm alguma)
+export interface PendenciaCartao {
+  titular: Titular;
+  quantidade: number;
+  total: number;
+}
+
 // Espelha AlertaTransacoesNaoDefinidasResponse
 export interface AlertaTransacoesNaoDefinidas {
   quantidade: number;
   total: number;
+  porCartao: PendenciaCartao[];
 }
 
 // Espelha AcertoFinalMesResponse (GET /faturas/{mes}/acerto-final)
