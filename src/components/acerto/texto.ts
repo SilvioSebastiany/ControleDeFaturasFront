@@ -25,7 +25,7 @@ export function descreverSemEfeito(l: LancamentoSemEfeito): string {
   return `${formatarValorAbsoluto(l.valor)} pago ${PAGO_POR[l.pagoPor]}, ${ROTULO_MOTIVO[l.motivo]}`;
 }
 
-function outroTitular(titular: Titular): Titular {
+export function outroTitular(titular: Titular): Titular {
   return titular === Titular.Silvio ? Titular.Claucia : Titular.Silvio;
 }
 

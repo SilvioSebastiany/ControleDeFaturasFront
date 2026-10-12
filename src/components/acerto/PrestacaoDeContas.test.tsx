@@ -11,6 +11,10 @@ const vazio = (pagante: Titular): BlocoPagante => ({
   faturaTotal: 0,
   boletosPagos: [],
   totalDesembolsado: 0,
+  compartilhado: 0,
+  pessoalProprio: 0,
+  pessoalDoOutro: 0,
+  metadeDoCompartilhado: 0,
 });
 
 const blocoClaucia: BlocoPagante = {
@@ -24,6 +28,10 @@ const blocoClaucia: BlocoPagante = {
   faturaTotal: 460,
   boletosPagos: [{ descricao: 'Internet', valor: 100 }],
   totalDesembolsado: 560,
+  compartilhado: 400,
+  pessoalProprio: 60,
+  pessoalDoOutro: 90,
+  metadeDoCompartilhado: 200,
 };
 
 const blocoSilvio: BlocoPagante = {
@@ -37,6 +45,10 @@ const blocoSilvio: BlocoPagante = {
   faturaTotal: 204.28,
   boletosPagos: [],
   totalDesembolsado: 204.28,
+  compartilhado: 30,
+  pessoalProprio: 54.28,
+  pessoalDoOutro: 120,
+  metadeDoCompartilhado: 15,
 };
 
 function bloco(nome: RegExp) {
@@ -129,6 +141,48 @@ describe('PrestacaoDeContas', () => {
     expect(silvio.queryByRole('button', { name: /Fatura do cartão/ })).not.toBeInTheDocument();
     expect(silvio.getByText('Luz')).toBeInTheDocument();
     expect(silvio.getByText('Total desembolsado').closest('div')).toHaveTextContent('R$ 70,00');
+  });
+
+  describe('deste total e divisão do compartilhado', () => {
+    it('mostra compartilhado, pessoal dele e pessoal de Claucia no bloco do Silvio', () => {
+      render(<PrestacaoDeContas blocos={[blocoClaucia, blocoSilvio]} />);
+
+      const desteTotal = within(bloco(/Silvio pagou/).getByRole('group', { name: 'Deste total' }));
+      expect(desteTotal.getByText('Compartilhado').closest('div')).toHaveTextContent('R$ 30,00');
+      expect(desteTotal.getByText('Pessoal dele').closest('div')).toHaveTextContent('R$ 54,28');
+      expect(desteTotal.getByText('Pessoal de Claucia').closest('div')).toHaveTextContent('R$ 120,00');
+    });
+
+    it('mostra pessoal dela e pessoal de Silvio no bloco da Claucia', () => {
+      render(<PrestacaoDeContas blocos={[blocoClaucia, blocoSilvio]} />);
+
+      const desteTotal = within(bloco(/Claucia pagou/).getByRole('group', { name: 'Deste total' }));
+      expect(desteTotal.getByText('Compartilhado').closest('div')).toHaveTextContent('R$ 400,00');
+      expect(desteTotal.getByText('Pessoal dela').closest('div')).toHaveTextContent('R$ 60,00');
+      expect(desteTotal.getByText('Pessoal de Silvio').closest('div')).toHaveTextContent('R$ 90,00');
+    });
+
+    it('mostra a metade do compartilhado para cada um', () => {
+      render(<PrestacaoDeContas blocos={[blocoClaucia, blocoSilvio]} />);
+
+      const claucia = bloco(/Claucia pagou/);
+      expect(claucia.getByText('compartilhado · 50% para cada um')).toBeInTheDocument();
+      const par = within(claucia.getByRole('group', { name: 'Divisão do compartilhado' }));
+      expect(par.getByText('Silvio').closest('div')).toHaveTextContent('R$ 200,00');
+      expect(par.getByText('Claucia').closest('div')).toHaveTextContent('R$ 200,00');
+
+      const par2 = within(bloco(/Silvio pagou/).getByRole('group', { name: 'Divisão do compartilhado' }));
+      expect(par2.getByText('Silvio').closest('div')).toHaveTextContent('R$ 15,00');
+      expect(par2.getByText('Claucia').closest('div')).toHaveTextContent('R$ 15,00');
+    });
+
+    it('não mostra "Deste total" nem a divisão quando o titular não pagou nada', () => {
+      render(<PrestacaoDeContas blocos={[blocoClaucia, vazio(Titular.Silvio)]} />);
+
+      const silvio = bloco(/Silvio pagou/);
+      expect(silvio.queryByRole('group', { name: 'Deste total' })).not.toBeInTheDocument();
+      expect(silvio.queryByRole('group', { name: 'Divisão do compartilhado' })).not.toBeInTheDocument();
+    });
   });
 
   it('abre e fecha a fatura pelo teclado', async () => {

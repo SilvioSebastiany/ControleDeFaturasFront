@@ -62,6 +62,14 @@ test.describe('Resumo do mês', () => {
     await expect(fatura).toContainText('R$ 195,00');
     await expect(fatura).toHaveAttribute('aria-expanded', 'false');
     await expect(blocoSilvio.getByText('Total desembolsado').locator('..')).toContainText('R$ 195,00');
+    // "Deste total": mercado compartilhado (100), assinatura dele (25), presente da Claucia (30);
+    // a farmácia ficou sem categoria e não entra em nenhuma parte. Metade do compartilhado: 50.
+    const desteTotal = blocoSilvio.getByRole('group', { name: 'Deste total' });
+    await expect(desteTotal.getByText('Compartilhado').locator('..')).toContainText('R$ 100,00');
+    await expect(desteTotal.getByText('Pessoal dele').locator('..')).toContainText('R$ 25,00');
+    await expect(desteTotal.getByText('Pessoal de Claucia').locator('..')).toContainText('R$ 30,00');
+    await expect(blocoSilvio.getByText('compartilhado · 50% para cada um')).toBeVisible();
+    await expect(blocoSilvio.getByRole('group', { name: 'Divisão do compartilhado' })).toContainText('R$ 50,00');
     await fatura.click();
     const itensFatura = blocoSilvio.getByRole('listitem');
     await expect(itensFatura).toHaveCount(4);

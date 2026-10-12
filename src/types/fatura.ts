@@ -187,6 +187,12 @@ export interface BlocoPagante {
   faturaTotal: number;
   boletosPagos: BoletoPago[];
   totalDesembolsado: number;
+  // "Deste total": compartilhado, pessoal de quem pagou e pessoal do outro; e a metade do
+  // compartilhado que cabe a cada um
+  compartilhado: number;
+  pessoalProprio: number;
+  pessoalDoOutro: number;
+  metadeDoCompartilhado: number;
 }
 
 // Espelha AcertoFinalMesResponse (GET /faturas/{mes}/acerto-final)

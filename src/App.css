@@ -802,3 +802,50 @@
   border-top: 1px solid var(--border);
   font-weight: 600;
 }
+
+/* Prestação de contas: "Deste total" e divisão do compartilhado. */
+.prestacao-deste-total {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 10px;
+}
+
+.prestacao-rotulo-secao {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.prestacao-nota {
+  margin: 10px 0 4px;
+  font-size: 12px;
+}
+
+.prestacao-divisao {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.prestacao-divisao > div {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: var(--text-h);
+}
+
+.prestacao-divisao .silvio {
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.prestacao-divisao .claucia {
+  background: rgba(194, 65, 12, 0.1);
+}
+
+.prestacao-quem {
+  font-size: 12px;
+  color: var(--text);
+}

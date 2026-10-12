@@ -1,6 +1,8 @@
 import { Titular } from '../../types/fatura.ts';
 import type { BlocoPagante } from '../../types/fatura.ts';
 import { formatarValor } from '../../utils/dinheiro.ts';
+import { DesteTotal } from './DesteTotal.tsx';
+import { DivisaoDoCompartilhado } from './DivisaoDoCompartilhado.tsx';
 import { FaturaDoCartao } from './FaturaDoCartao.tsx';
 import { ROTULO_TITULAR } from './rotulos.ts';
 
@@ -30,6 +32,8 @@ export function BlocoDoPagante({ bloco }: { bloco: BlocoPagante }) {
             <span>Total desembolsado</span>
             <span className="prestacao-valor">{formatarValor(bloco.totalDesembolsado)}</span>
           </div>
+          <DesteTotal bloco={bloco} />
+          <DivisaoDoCompartilhado metade={bloco.metadeDoCompartilhado} />
         </div>
       )}
     </section>
