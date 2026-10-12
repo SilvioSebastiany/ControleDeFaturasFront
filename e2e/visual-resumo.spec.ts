@@ -45,6 +45,11 @@ test.describe('Resumo do mês: visual', () => {
           .click();
         await expect(page.getByRole('region', { name: 'Silvio pagou' }).getByRole('listitem')).toHaveCount(4);
 
+        // E uma linha da seção Acerto, com os itens e a fonte.
+        const consolidado = page.getByRole('region', { name: 'Acerto consolidado' });
+        await consolidado.getByRole('button', { name: /Claucia no cartão dele/ }).click();
+        await expect(consolidado.getByRole('listitem')).toHaveCount(1);
+
         // A barra inferior é fixa; na captura de página inteira ela ficaria no meio.
         // Posicionada no fim, mostra como a tela aparece ao rolar até o final.
         await page.addStyleTag({ content: '.bottom-nav { position: static !important; }' });

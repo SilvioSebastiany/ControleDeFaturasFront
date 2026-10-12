@@ -5,6 +5,17 @@ import { PainelAcerto } from './PainelAcerto.tsx';
 import { EtapaAcerto, MotivoSemEfeito, RegraAplicada, Titular } from '../types/fatura.ts';
 import type { AcertoFinalMes } from '../types/fatura.ts';
 
+const consolidadoVazio: AcertoFinalMes['acertoConsolidado'] = {
+  metadeDoQueClauciaPagou: { valor: 0, itens: [] },
+  metadeDoQueSilvioPagou: { valor: 0, itens: [] },
+  saldoCompartilhado: 0,
+  silvioNoCartaoDela: { valor: 0, itens: [] },
+  clauciaNoCartaoDele: { valor: 0, itens: [] },
+  subtotalDoMes: { quemDeve: null, valor: 0 },
+  acordosFixos: { valor: 0, itens: [] },
+  total: { quemDeve: null, valor: 0 },
+};
+
 const acertoFinalMes: AcertoFinalMes = {
   acerto: {
     quemDeve: Titular.Claucia,
@@ -32,6 +43,7 @@ const acertoFinalMes: AcertoFinalMes = {
   etapas: [],
   transacoesNaoDefinidas: { quantidade: 0, total: 0, porCartao: [] },
   prestacaoDeContas: [],
+  acertoConsolidado: consolidadoVazio,
 };
 
 describe('PainelAcerto', () => {
@@ -344,6 +356,7 @@ describe('PainelAcerto', () => {
         porCartao: [{ titular: Titular.Silvio, quantidade: 1, total: 30 }],
       },
       prestacaoDeContas: [],
+      acertoConsolidado: consolidadoVazio,
     };
 
     function cartao(nome: RegExp) {

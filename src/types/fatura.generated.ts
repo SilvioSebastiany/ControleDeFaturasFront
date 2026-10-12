@@ -98,3 +98,18 @@ export const OrigemItemFatura = {
 } as const satisfies Record<string, OrigemItemFatura>;
 
 export const OrigemItemFatura_VALORES: readonly OrigemItemFatura[] = ['Compartilhado', 'PessoalProprio', 'PessoalDoOutro', 'SemCategoria'];
+
+// FonteItemConta: os valores válidos que a API pode enviar/aceitar neste enum.
+export type FonteItemConta = 'CartaoSilvio' | 'CartaoClaucia' | 'BoletoPagoPorSilvio' | 'BoletoPagoPorClaucia' | 'AcordoFixo';
+
+// Para usar como valor (ex.: Titular.Silvio) em vez de string crua — mesmo
+// resultado, só evita erro de digitação no call site.
+export const FonteItemConta = {
+  CartaoSilvio: 'CartaoSilvio',
+  CartaoClaucia: 'CartaoClaucia',
+  BoletoPagoPorSilvio: 'BoletoPagoPorSilvio',
+  BoletoPagoPorClaucia: 'BoletoPagoPorClaucia',
+  AcordoFixo: 'AcordoFixo',
+} as const satisfies Record<string, FonteItemConta>;
+
+export const FonteItemConta_VALORES: readonly FonteItemConta[] = ['CartaoSilvio', 'CartaoClaucia', 'BoletoPagoPorSilvio', 'BoletoPagoPorClaucia', 'AcordoFixo'];

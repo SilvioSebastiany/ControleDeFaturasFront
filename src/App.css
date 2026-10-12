@@ -849,3 +849,142 @@
   font-size: 12px;
   color: var(--text);
 }
+
+/* Seção "Acerto" consolidada (do Divisor). */
+.consolidado {
+  flex-basis: 100%;
+}
+
+.consolidado-titulo {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-h);
+}
+
+.consolidado-subtitulo {
+  margin: 2px 0 12px;
+  font-size: 13px;
+}
+
+.consolidado-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 14px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.consolidado-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  color: var(--text-h);
+}
+
+.consolidado-linha.expansivel {
+  cursor: pointer;
+}
+
+.consolidado-linha.expansivel:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.consolidado-linha.expansivel .consolidado-rotulo::before {
+  content: '▶';
+  display: inline-block;
+  width: 16px;
+  font-size: 10px;
+}
+
+.consolidado-linha.expansivel.aberta .consolidado-rotulo::before {
+  content: '▼';
+}
+
+.consolidado-linha.credito .consolidado-valor {
+  color: #1a7f37;
+}
+
+.consolidado-linha.subtotal {
+  margin-top: 2px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  font-weight: 600;
+}
+
+.consolidado-rotulo {
+  min-width: 0;
+}
+
+.consolidado-valor {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.consolidado-itens {
+  list-style: none;
+  margin: 0 0 6px 16px;
+  padding: 0 0 0 10px;
+  border-left: 2px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.consolidado-itens li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-h);
+}
+
+.consolidado-itens li > span:first-child {
+  min-width: 0;
+}
+
+.consolidado-item-descricao,
+.consolidado-item-fonte {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.consolidado-item-fonte {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.consolidado-itens li.credito .consolidado-valor {
+  color: #1a7f37;
+}
+
+.consolidado-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-h);
+  background: var(--accent-bg);
+}
+
+.consolidado-total.silvio {
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.consolidado-total.claucia {
+  background: rgba(194, 65, 12, 0.1);
+}

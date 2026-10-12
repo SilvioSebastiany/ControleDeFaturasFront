@@ -78,6 +78,19 @@ test.describe('Resumo do mês', () => {
     await expect(itensFatura.filter({ hasText: 'Assinatura Pessoal' })).toContainText('pessoal dele');
     await expect(itensFatura.filter({ hasText: 'Farmacia Teste' })).toContainText('sem categoria');
 
+    // Seção "Acerto" (como no Divisor, sem pagamentos). Tudo saiu no cartão do Silvio: a Claucia
+    // deve a metade do compartilhado (50) e o presente dela (30); acordo fixo de 20 abate.
+    const consolidado = page.getByRole('region', { name: 'Acerto consolidado' });
+    await expect(consolidado.getByRole('button', { name: /Claucia deve ao Silvio/ })).toContainText('R$ 50,00');
+    await expect(consolidado.getByRole('button', { name: /Silvio deve à Claucia/ })).toHaveCount(0);
+    await expect(consolidado.getByText('Saldo compartilhado').locator('..')).toContainText('R$ 50,00');
+    await expect(consolidado.getByRole('button', { name: /Claucia no cartão dele/ })).toContainText('R$ 30,00');
+    await expect(consolidado.getByRole('button', { name: /acordos fixos/ })).toContainText('R$ 20,00');
+    await expect(consolidado.getByTestId('total-final')).toContainText('Claucia paga');
+    await expect(consolidado.getByTestId('total-final')).toContainText('R$ 60,00');
+    await consolidado.getByRole('button', { name: /Claucia deve ao Silvio/ }).click();
+    await expect(consolidado.getByRole('listitem').filter({ hasText: 'Mercado Teste' })).toContainText('cartão Silvio');
+
     // O acerto do mes vem fechado por padrao (sem itens ate clicar).
     await expect(page.getByRole('group', { name: /Acerto do mês/ }).getByRole('listitem')).toHaveCount(0);
 

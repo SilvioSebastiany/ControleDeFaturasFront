@@ -13,6 +13,7 @@ export {
   MotivoSemEfeito,
   EtapaAcerto,
   OrigemItemFatura,
+  FonteItemConta,
 } from './fatura.generated.ts';
 import type {
   Titular,
@@ -22,6 +23,7 @@ import type {
   MotivoSemEfeito,
   EtapaAcerto,
   OrigemItemFatura,
+  FonteItemConta,
 } from './fatura.generated.ts';
 
 // Espelha TransacaoResponse (src/api/Responses/TransacaoResponse.cs)
@@ -195,6 +197,31 @@ export interface BlocoPagante {
   metadeDoCompartilhado: number;
 }
 
+// Espelha ItemContaResponse: um item de uma linha da seção "Acerto", com a fonte de onde veio
+export interface ItemConta {
+  descricao: string;
+  valor: number;
+  fonte: FonteItemConta;
+}
+
+// Espelha LinhaContaResponse: uma linha expansível da seção "Acerto"
+export interface LinhaConta {
+  valor: number;
+  itens: ItemConta[];
+}
+
+// Espelha AcertoConsolidadoResponse: a seção "Acerto" do Divisor (sem pagamentos)
+export interface AcertoConsolidado {
+  metadeDoQueClauciaPagou: LinhaConta; // o que o Silvio deve à Claucia
+  metadeDoQueSilvioPagou: LinhaConta; // o que a Claucia deve ao Silvio
+  saldoCompartilhado: number; // positivo: o Silvio deve; negativo: a Claucia deve
+  silvioNoCartaoDela: LinhaConta;
+  clauciaNoCartaoDele: LinhaConta;
+  subtotalDoMes: SaldoAcerto;
+  acordosFixos: LinhaConta;
+  total: SaldoAcerto;
+}
+
 // Espelha AcertoFinalMesResponse (GET /faturas/{mes}/acerto-final)
 export interface AcertoFinalMes {
   acerto: Acerto;
@@ -203,4 +230,5 @@ export interface AcertoFinalMes {
   etapas: EtapaAcertoFinal[];
   transacoesNaoDefinidas: AlertaTransacoesNaoDefinidas;
   prestacaoDeContas: BlocoPagante[];
+  acertoConsolidado: AcertoConsolidado;
 }

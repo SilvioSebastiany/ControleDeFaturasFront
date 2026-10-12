@@ -1,5 +1,11 @@
-import { OrigemItemFatura, Titular } from '../../types/fatura.ts';
-import type { ItemAcerto, ItemFatura, LancamentoSemEfeito, SaldoAcerto } from '../../types/fatura.ts';
+import { FonteItemConta, OrigemItemFatura, Titular } from '../../types/fatura.ts';
+import type {
+  ItemAcerto,
+  ItemConta,
+  ItemFatura,
+  LancamentoSemEfeito,
+  SaldoAcerto,
+} from '../../types/fatura.ts';
 import { PAGO_POR, ROTULO_MOTIVO, ROTULO_REGRA, ROTULO_TITULAR } from './rotulos.ts';
 
 // Valor sem sinal: a direção ("X deve", "estorno de", "a menos") vai no texto.
@@ -41,6 +47,27 @@ export function descreverOrigem(item: ItemFatura, pagante: Titular): string {
       return `pessoal de ${ROTULO_TITULAR[outroTitular(pagante)]}`;
     case OrigemItemFatura.SemCategoria:
       return 'sem categoria';
+  }
+}
+
+// Valor zero (ou de meio centavo) não aparece: mesma zona morta do motor de acerto.
+export function temValor(valor: number): boolean {
+  return Math.abs(valor) >= 0.005;
+}
+
+// De onde veio um item da seção "Acerto": "cartão Claucia", "débito conta silvio · em Outros Gastos"...
+export function descreverFonte(item: ItemConta): string {
+  switch (item.fonte) {
+    case FonteItemConta.CartaoSilvio:
+      return 'cartão Silvio';
+    case FonteItemConta.CartaoClaucia:
+      return 'cartão Claucia';
+    case FonteItemConta.BoletoPagoPorSilvio:
+      return 'débito conta silvio · em Outros Gastos';
+    case FonteItemConta.BoletoPagoPorClaucia:
+      return 'débito conta claucia · em Outros Gastos';
+    case FonteItemConta.AcordoFixo:
+      return 'acordo mensal fixo';
   }
 }
 
