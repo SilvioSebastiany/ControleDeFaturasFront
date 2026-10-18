@@ -32,23 +32,17 @@ test.describe('Resumo do mês: visual', () => {
         await page.goto('/');
         await page.getByLabel('Mês').fill(mes);
 
-        // Abre o acerto do mês (o final já vem aberto) para a tela mostrar tudo.
-        const acertoDoMes = page.getByRole('button', { name: /Acerto do mês/ });
-        await expect(acertoDoMes).toContainText('Claucia deve R$ 80,00');
-        await acertoDoMes.click();
-        await expect(page.getByRole('region', { name: 'Lançamentos sem efeito' })).toBeVisible();
-
-        // Abre a fatura do Silvio na prestação de contas para a captura mostrar os itens.
-        await page
-          .getByRole('region', { name: 'Silvio pagou' })
-          .getByRole('button', { name: /Fatura do cartão/ })
-          .click();
-        await expect(page.getByRole('region', { name: 'Silvio pagou' }).getByRole('listitem')).toHaveCount(4);
-
-        // E uma linha da seção Acerto, com os itens e a fonte.
-        const consolidado = page.getByRole('region', { name: 'Acerto consolidado' });
-        await consolidado.getByRole('button', { name: /Claucia no cartão dele/ }).click();
-        await expect(consolidado.getByRole('listitem')).toHaveCount(1);
+        // Abre o que vem recolhido para a captura mostrar tudo: itens da fatura do Silvio,
+        // compras compartilhadas, regra de cada lançamento e a prova real.
+        await expect(page.getByTestId('resultado-frase')).toContainText('Claucia paga R$ 60,00 para o Silvio');
+        const faturaSilvio = page.getByRole('region', { name: 'Fatura do Silvio' });
+        await faturaSilvio.getByRole('button', { name: /Ver os 4 itens da fatura/ }).click();
+        await expect(faturaSilvio.getByRole('listitem')).toHaveCount(4);
+        await page.getByRole('button', { name: /as compras compartilhadas/ }).click();
+        await page.getByRole('button', { name: /regra aplicada a cada lançamento/ }).click();
+        await page.getByRole('region', { name: 'Prova real' }).getByText('Ver a conta alternativa').click();
+        await page.getByRole('region', { name: 'Lançamentos sem efeito' }).getByRole('button').click();
+        await expect(page.getByRole('region', { name: 'Lançamentos sem efeito' }).getByRole('listitem')).toHaveCount(1);
 
         // A barra inferior é fixa; na captura de página inteira ela ficaria no meio.
         // Posicionada no fim, mostra como a tela aparece ao rolar até o final.

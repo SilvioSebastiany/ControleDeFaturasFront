@@ -80,64 +80,10 @@
 
 .painel-acerto {
   display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  margin: 24px 0;
-}
-
-.acerto-card {
-  flex: 1 1 260px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
-}
-
-.acerto-card.destaque {
-  border-color: var(--accent);
-}
-
-.acerto-card.quites {
-  border-color: #1a7f37;
-}
-
-.acerto-card-toggle {
-  display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  width: 100%;
-  border: none;
-  background: transparent;
-  padding: 0;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  position: relative;
-}
-
-.acerto-card-toggle:disabled {
-  cursor: default;
-}
-
-.acerto-card-label {
-  font-size: 13px;
-  color: var(--text);
-}
-
-.acerto-card-valor {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text-h);
-}
-
-.acerto-card-seta {
-  position: absolute;
-  top: 0;
-  right: 0;
-  font-size: 12px;
-  color: var(--text);
+  gap: 14px;
+  margin: 24px 0;
+  max-width: 760px;
 }
 
 .acerto-itens {
@@ -587,10 +533,6 @@
    pessoal do outro → Claucia deve R$ 30,00"); quebram de linha em vez de
    estourar a largura da tela. */
 @media (max-width: 600px) {
-  .acerto-card {
-    min-width: 0;
-  }
-
   .acerto-itens li,
   .sem-efeito-lista li {
     flex-direction: column;
@@ -651,219 +593,6 @@
 .pendencia-btn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-}
-
-/* Prestação de contas: o que cada um pagou. Uma coluna no celular, duas em telas largas. */
-.prestacao {
-  flex-basis: 100%;
-}
-
-.prestacao-titulo {
-  margin: 0;
-  font-size: 16px;
-  color: var(--text-h);
-}
-
-.prestacao-subtitulo {
-  margin: 2px 0 12px;
-  font-size: 13px;
-}
-
-.prestacao-blocos {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-@media (min-width: 700px) {
-  .prestacao-blocos {
-    grid-template-columns: 1fr 1fr;
-    align-items: start;
-  }
-}
-
-.prestacao-bloco {
-  min-width: 0;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.prestacao-bloco-titulo {
-  margin: 0;
-  padding: 10px 14px;
-  font-size: 14px;
-  color: var(--text-h);
-  border-bottom: 2px solid var(--accent);
-  background: var(--accent-bg);
-}
-
-.prestacao-bloco.silvio .prestacao-bloco-titulo {
-  border-bottom-color: #2563eb;
-  background: rgba(37, 99, 235, 0.1);
-}
-
-.prestacao-bloco.claucia .prestacao-bloco-titulo {
-  border-bottom-color: #c2410c;
-  background: rgba(194, 65, 12, 0.1);
-}
-
-.prestacao-corpo {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 10px 14px 14px;
-}
-
-.prestacao-vazio {
-  margin: 0;
-  padding: 12px 14px;
-  font-size: 13px;
-}
-
-.prestacao-linha {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  min-height: 36px;
-  font-size: 14px;
-  color: var(--text-h);
-}
-
-.prestacao-fatura {
-  width: 100%;
-  min-height: 44px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  font: inherit;
-  font-size: 14px;
-  text-align: left;
-  cursor: pointer;
-}
-
-.prestacao-fatura:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.prestacao-seta {
-  display: inline-block;
-  width: 16px;
-  font-size: 10px;
-}
-
-.prestacao-valor {
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
-.prestacao-itens {
-  list-style: none;
-  margin: 0 0 6px 16px;
-  padding: 0 0 0 10px;
-  border-left: 2px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.prestacao-itens li {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 13px;
-  color: var(--text-h);
-}
-
-.prestacao-itens li > span:first-child {
-  min-width: 0;
-}
-
-.prestacao-item-descricao,
-.prestacao-item-origem {
-  display: block;
-  overflow-wrap: anywhere;
-}
-
-.prestacao-item-origem {
-  font-size: 12px;
-  color: var(--text);
-}
-
-.prestacao-itens li.credito .prestacao-valor {
-  color: #1a7f37;
-}
-
-.prestacao-total {
-  margin-top: 4px;
-  padding-top: 8px;
-  border-top: 1px solid var(--border);
-  font-weight: 600;
-}
-
-/* Prestação de contas: "Deste total" e divisão do compartilhado. */
-.prestacao-deste-total {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 10px;
-}
-
-.prestacao-rotulo-secao {
-  margin: 0;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.prestacao-nota {
-  margin: 10px 0 4px;
-  font-size: 12px;
-}
-
-.prestacao-divisao {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.prestacao-divisao > div {
-  display: flex;
-  flex-direction: column;
-  padding: 8px 10px;
-  border-radius: 8px;
-  color: var(--text-h);
-}
-
-.prestacao-divisao .silvio {
-  background: rgba(37, 99, 235, 0.1);
-}
-
-.prestacao-divisao .claucia {
-  background: rgba(194, 65, 12, 0.1);
-}
-
-.prestacao-quem {
-  font-size: 12px;
-  color: var(--text);
-}
-
-/* Seção "Acerto" consolidada (do Divisor). */
-.consolidado {
-  flex-basis: 100%;
-}
-
-.consolidado-titulo {
-  margin: 0;
-  font-size: 16px;
-  color: var(--text-h);
-}
-
-.consolidado-subtitulo {
-  margin: 2px 0 12px;
-  font-size: 13px;
 }
 
 .consolidado-corpo {
@@ -968,23 +697,293 @@
   color: #1a7f37;
 }
 
-.consolidado-total {
+
+/* Resumo conferível: resultado no topo e a conta em passos numerados. */
+:root {
+  --ok: #1a7f37;
+  --atencao: #9a6700;
+  --atencao-bg: rgba(154, 103, 0, 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ok: #3fb950;
+    --atencao: #e3b341;
+    --atencao-bg: rgba(227, 179, 65, 0.15);
+  }
+}
+
+:root[data-theme='dark'] {
+  --ok: #3fb950;
+  --atencao: #e3b341;
+  --atencao-bg: rgba(227, 179, 65, 0.15);
+}
+
+.resultado {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 10px;
-  padding: 12px 14px;
-  border-radius: 8px;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text-h);
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 2px solid var(--accent);
+  border-radius: 12px;
   background: var(--accent-bg);
 }
 
-.consolidado-total.silvio {
-  background: rgba(37, 99, 235, 0.1);
+.resultado-selo {
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ok);
 }
 
-.consolidado-total.claucia {
-  background: rgba(194, 65, 12, 0.1);
+.resultado-selo.atencao {
+  color: var(--atencao);
+}
+
+.resultado-frase {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--text-h);
+  overflow-wrap: anywhere;
+}
+
+.resultado-caminho {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--accent-border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.resultado-caminho li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.resultado-caminho li > span:first-child {
+  min-width: 0;
+}
+
+.resultado-caminho li > span:last-child {
+  text-align: right;
+}
+
+.passo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-width: 0;
+}
+
+.passo-cabecalho {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.passo-numero {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.passo-titulo {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-h);
+}
+
+.passo-subtitulo {
+  margin: 2px 0 0;
+  font-size: 13px;
+}
+
+.passo-vem {
+  margin: 0;
+  padding-left: 8px;
+  border-left: 3px solid var(--border);
+  font-size: 13px;
+}
+
+.passo-nota {
+  margin: 0;
+  font-size: 13px;
+}
+
+.passo-destaque {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--accent-bg);
+  color: var(--text-h);
+  font-size: 14px;
+}
+
+.passo-rotulo-secao {
+  margin: 6px 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.passo-toggle {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0 4px;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.passo-toggle:focus-visible,
+.prova-real summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.passo-itens {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.passo-itens li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.passo-itens li > span:first-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.passo-item-descricao {
+  color: var(--text-h);
+  overflow-wrap: anywhere;
+}
+
+.passo-item-origem {
+  font-size: 12px;
+}
+
+.passo-itens li.credito .conta-valor {
+  color: var(--ok);
+}
+
+.conta {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.conta-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 5px 0;
+}
+
+.conta-linha.total {
+  margin-top: 2px;
+  padding-top: 7px;
+  border-top: 1.5px solid var(--text-h);
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.conta-rotulo {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.conta-sinal {
+  display: inline-block;
+  width: 1.2em;
+  color: var(--text);
+}
+
+.conta-valor {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.faturas-par {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 10px;
+}
+
+.fatura-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  min-width: 0;
+}
+
+.fatura-cartao-titulo {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.fatura-confere {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ok);
+}
+
+.fatura-confere.atencao {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--atencao-bg);
+  color: var(--atencao);
+}
+
+.prova-real summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
 }

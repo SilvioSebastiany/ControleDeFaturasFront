@@ -2,19 +2,44 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { PainelAcerto } from './PainelAcerto.tsx';
-import { EtapaAcerto, MotivoSemEfeito, RegraAplicada, Titular } from '../types/fatura.ts';
-import type { AcertoFinalMes } from '../types/fatura.ts';
+import { EtapaAcerto, MotivoSemEfeito, OrigemItemFatura, RegraAplicada, Titular } from '../types/fatura.ts';
+import type { AcertoFinalMes, BlocoPagante } from '../types/fatura.ts';
 
 const consolidadoVazio: AcertoFinalMes['acertoConsolidado'] = {
   metadeDoQueClauciaPagou: { valor: 0, itens: [] },
   metadeDoQueSilvioPagou: { valor: 0, itens: [] },
   saldoCompartilhado: 0,
+  divisao: {
+    pagoPorSilvio: 0,
+    pagoPorClaucia: 0,
+    total: 0,
+    metadePorPessoa: 0,
+    saldo: { quemDeve: null, valor: 0 },
+  },
   silvioNoCartaoDela: { valor: 0, itens: [] },
   clauciaNoCartaoDele: { valor: 0, itens: [] },
+  saldoPessoal: { quemDeve: null, valor: 0 },
   subtotalDoMes: { quemDeve: null, valor: 0 },
   acordosFixos: { valor: 0, itens: [] },
   total: { quemDeve: null, valor: 0 },
+  provaReal: { titular: Titular.Silvio, deveriaArcar: 0, pagou: 0, divida: 0, confere: true },
 };
+
+// Pelo menos um lançamento, para o painel mostrar a conta em vez do estado vazio.
+const blocoComLancamento = (pagante: Titular): BlocoPagante => ({
+  pagante,
+  itensFatura: [{ descricao: 'Mercado', valor: 100, origem: OrigemItemFatura.Compartilhado }],
+  faturaTotal: 100,
+  boletosPagos: [],
+  totalDesembolsado: 100,
+  compartilhado: 100,
+  compartilhadoNoCartao: 100,
+  pessoalProprio: 0,
+  pessoalDoOutro: 0,
+  semCategoria: 0,
+  metadeDoCompartilhado: 50,
+});
+const blocosMinimos = [blocoComLancamento(Titular.Claucia), blocoComLancamento(Titular.Silvio)];
 
 const acertoFinalMes: AcertoFinalMes = {
   acerto: {
@@ -42,27 +67,25 @@ const acertoFinalMes: AcertoFinalMes = {
   },
   etapas: [],
   transacoesNaoDefinidas: { quantidade: 0, total: 0, porCartao: [] },
-  prestacaoDeContas: [],
+  prestacaoDeContas: blocosMinimos,
   acertoConsolidado: consolidadoVazio,
 };
 
 describe('PainelAcerto', () => {
-  it('mostra quem deve quanto no acerto do mês e "quites" no acerto final zerado', () => {
+  it('mostra o resultado no topo: "quites" quando o acerto final zera', () => {
     render(<PainelAcerto acertoFinalMes={acertoFinalMes} />);
 
-    expect(screen.getByRole('button', { name: /Acerto do mês/ })).toHaveTextContent(
-      'Claucia deve R$ 50,00',
-    );
-    expect(screen.getByRole('button', { name: /Acerto final/ })).toHaveTextContent('Estão quites');
+    expect(screen.getByTestId('resultado-frase')).toHaveTextContent('Estão quites');
   });
 
-  it('abre o detalhamento dos itens ao clicar no cartão', async () => {
+  it('abre a regra aplicada a cada lançamento só ao clicar', async () => {
     render(<PainelAcerto acertoFinalMes={acertoFinalMes} />);
 
-    expect(screen.queryByText('Mercado')).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: /Acerto do mês/ }));
+    const passo = within(screen.getByRole('region', { name: /Passo 4/ }));
+    expect(passo.queryByText('Mercado')).not.toBeInTheDocument();
+    await userEvent.click(passo.getByRole('button', { name: /regra aplicada a cada lançamento/ }));
 
-    expect(screen.getByText('Mercado')).toBeInTheDocument();
+    expect(passo.getByText('Mercado')).toBeInTheDocument();
   });
 
   describe('alerta de lançamentos sem categoria', () => {
@@ -103,12 +126,12 @@ describe('PainelAcerto', () => {
       expect(screen.getByRole('status')).toHaveTextContent('1 lançamento sem categoria');
     });
 
-    it('fica acima dos cartões de acerto', () => {
+    it('fica acima do resultado do mês', () => {
       render(<PainelAcerto acertoFinalMes={comPendencias} />);
 
       const alerta = screen.getByRole('status');
-      const cartao = screen.getByRole('group', { name: /Acerto do mês/ });
-      expect(alerta.compareDocumentPosition(cartao) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      const resultado = screen.getByRole('region', { name: 'Resultado do mês' });
+      expect(alerta.compareDocumentPosition(resultado) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
     it('oferece um atalho para cada cartão com pendência', async () => {
@@ -164,8 +187,8 @@ describe('PainelAcerto', () => {
           }}
         />,
       );
-      await userEvent.click(screen.getByRole('button', { name: /Acerto do mês/ }));
-      return screen.getByRole('listitem');
+      await userEvent.click(screen.getByRole('button', { name: /regra aplicada a cada lançamento/ }));
+      return within(screen.getByRole('region', { name: /Passo 4/ })).getByRole('listitem');
     }
 
     it('meio a meio: mostra valor original, quem pagou, regra e efeito', async () => {
@@ -264,10 +287,11 @@ describe('PainelAcerto', () => {
       },
     };
 
-    it('lista cada um numa seção própria, com valor, quem pagou e o motivo', () => {
+    it('lista cada um numa seção própria, com valor, quem pagou e o motivo, ao abrir', async () => {
       render(<PainelAcerto acertoFinalMes={comSemEfeito} />);
 
       const secao = screen.getByRole('region', { name: 'Lançamentos sem efeito' });
+      await userEvent.click(within(secao).getByRole('button', { name: /Ver 2 lançamentos/ }));
       const [github, anuidade] = within(secao).getAllByRole('listitem');
       expect(github).toHaveTextContent('Github');
       expect(github).toHaveTextContent('R$ 54,28 pago pelo Silvio, gasto pessoal de quem pagou');
@@ -275,14 +299,26 @@ describe('PainelAcerto', () => {
       expect(anuidade).toHaveTextContent('R$ 0,00 pago pela Claucia, valor zero');
     });
 
+    it('vem recolhida e mostra quantos são; abre e fecha ao clicar', async () => {
+      render(<PainelAcerto acertoFinalMes={comSemEfeito} />);
+
+      const secao = within(screen.getByRole('region', { name: 'Lançamentos sem efeito' }));
+      expect(secao.queryByRole('listitem')).not.toBeInTheDocument();
+
+      await userEvent.click(secao.getByRole('button', { name: /Ver 2 lançamentos que não mudam o acerto/ }));
+      expect(secao.getAllByRole('listitem')).toHaveLength(2);
+
+      await userEvent.click(secao.getByRole('button', { name: /Esconder 2 lançamentos/ }));
+      expect(secao.queryByRole('listitem')).not.toBeInTheDocument();
+    });
+
     it('não polui a lista principal de itens do acerto', async () => {
       render(<PainelAcerto acertoFinalMes={comSemEfeito} />);
-      await userEvent.click(screen.getByRole('button', { name: /Acerto do mês/ }));
+      await userEvent.click(screen.getByRole('button', { name: /regra aplicada a cada lançamento/ }));
 
-      const secao = screen.getByRole('region', { name: 'Lançamentos sem efeito' });
-      const principal = screen.getAllByRole('listitem').filter((li) => !secao.contains(li));
-      expect(principal).toHaveLength(1);
-      expect(principal[0]).toHaveTextContent('Mercado');
+      const lista = within(screen.getByRole('region', { name: /Passo 4/ })).getAllByRole('listitem');
+      expect(lista).toHaveLength(1);
+      expect(lista[0]).toHaveTextContent('Mercado');
     });
 
     it('não mostra a seção quando não há lançamentos sem efeito', () => {
@@ -355,40 +391,48 @@ describe('PainelAcerto', () => {
         total: 30,
         porCartao: [{ titular: Titular.Silvio, quantidade: 1, total: 30 }],
       },
-      prestacaoDeContas: [],
+      prestacaoDeContas: blocosMinimos,
       acertoConsolidado: consolidadoVazio,
     };
 
-    function cartao(nome: RegExp) {
-      return within(screen.getByRole('group', { name: nome }));
+    // Passo 5: as etapas depois do acerto do mês (acordos fixos e pagamentos).
+    function passoCinco() {
+      return within(screen.getByRole('region', { name: /Passo 5/ }));
     }
 
-    it('mostra as etapas com itens e saldo acumulado, aberto por padrao', () => {
+    it('mostra o ponto de partida e as etapas de acordos e pagamentos, com itens e saldo acumulado', () => {
       render(<PainelAcerto acertoFinalMes={comEtapas} />);
 
-      const final = cartao(/Acerto final/);
-      const etapas = final.getAllByRole('region');
-      expect(etapas).toHaveLength(3);
+      const passo = passoCinco();
+      expect(passo.getByText(/Ponto de partida \(passo 4\): Silvio deve R\$ 50,00/)).toBeInTheDocument();
 
-      expect(etapas[0]).toHaveTextContent('Acerto do mês');
-      expect(etapas[0]).toHaveTextContent('Mercado');
-      expect(etapas[0]).toHaveTextContent('Saldo acumulado: Silvio deve R$ 50,00');
+      const [acordos, pagamentos] = passo.getAllByRole('region');
+      expect(acordos).toHaveTextContent('Acordos fixos');
+      expect(acordos).toHaveTextContent('Apartamento');
+      expect(acordos).toHaveTextContent('Saldo acumulado: Silvio deve R$ 550,00');
 
-      expect(etapas[1]).toHaveTextContent('Acordos fixos');
-      expect(etapas[1]).toHaveTextContent('Apartamento');
-      expect(etapas[1]).toHaveTextContent('Saldo acumulado: Silvio deve R$ 550,00');
+      expect(pagamentos).toHaveTextContent('Pagamentos');
+      expect(pagamentos).toHaveTextContent('R$ 700,00 pago pelo Silvio, pagamento → Claucia deve R$ 700,00');
+      expect(pagamentos).toHaveTextContent('Saldo acumulado: Claucia deve R$ 150,00');
+    });
 
-      expect(etapas[2]).toHaveTextContent('Pagamentos');
-      expect(etapas[2]).toHaveTextContent('R$ 700,00 pago pelo Silvio, pagamento → Claucia deve R$ 700,00');
-      expect(etapas[2]).toHaveTextContent('Saldo acumulado: Claucia deve R$ 150,00');
+    it('mostra o resultado do topo e o caminho até ele', () => {
+      render(<PainelAcerto acertoFinalMes={comEtapas} />);
+
+      const resultado = within(screen.getByRole('region', { name: 'Resultado do mês' }));
+      expect(resultado.getByTestId('resultado-frase')).toHaveTextContent('Claucia paga R$ 150,00 para o Silvio');
+      const caminho = resultado.getAllByRole('listitem');
+      expect(caminho).toHaveLength(3);
+      expect(caminho[0]).toHaveTextContent('Acerto do mêsSilvio deve R$ 50,00');
+      expect(caminho[1]).toHaveTextContent('Com acordos fixosSilvio deve R$ 550,00');
+      expect(caminho[2]).toHaveTextContent('Com pagamentosClaucia deve R$ 150,00');
     });
 
     it('explica a inversao quando o pagamento supera a divida', () => {
       render(<PainelAcerto acertoFinalMes={comEtapas} />);
 
-      const [mes, acordos, pagamentos] = cartao(/Acerto final/).getAllByRole('region');
+      const [acordos, pagamentos] = passoCinco().getAllByRole('region');
       expect(pagamentos).toHaveTextContent('Pagamento maior que a dívida: agora Claucia deve');
-      expect(mes).not.toHaveTextContent('maior que a dívida');
       expect(acordos).not.toHaveTextContent('maior que a dívida');
     });
 
@@ -411,7 +455,7 @@ describe('PainelAcerto', () => {
       };
       render(<PainelAcerto acertoFinalMes={inverteNoAcordo} />);
 
-      const [, acordos] = cartao(/Acerto final/).getAllByRole('region');
+      const [acordos] = passoCinco().getAllByRole('region');
       expect(acordos).toHaveTextContent('Saldo acumulado: Silvio deve R$ 450,00');
       expect(acordos).not.toHaveTextContent('maior que a dívida');
     });
@@ -427,7 +471,7 @@ describe('PainelAcerto', () => {
       };
       render(<PainelAcerto acertoFinalMes={minusculo} />);
 
-      const pagamentos = cartao(/Acerto final/).getAllByRole('region')[2];
+      const pagamentos = passoCinco().getAllByRole('region')[1];
       expect(pagamentos).toHaveTextContent('Saldo acumulado: Silvio deve R$ 0,01');
     });
 
@@ -449,25 +493,15 @@ describe('PainelAcerto', () => {
       };
       render(<PainelAcerto acertoFinalMes={quites} />);
 
-      const pagamentos = cartao(/Acerto final/).getAllByRole('region')[2];
+      const pagamentos = passoCinco().getAllByRole('region')[1];
       expect(pagamentos).toHaveTextContent('Saldo acumulado: Estão quites');
     });
 
-    it('detalhamento do acerto final vem aberto e o do acerto do mes vem fechado', () => {
+    it('as etapas de acordos e pagamentos vêm abertas e os itens do acerto do mês vêm fechados', () => {
       render(<PainelAcerto acertoFinalMes={comEtapas} />);
 
-      expect(cartao(/Acerto final/).getAllByRole('region')).toHaveLength(3);
-      expect(cartao(/Acerto do mês/).queryByText('Mercado')).not.toBeInTheDocument();
-    });
-
-    it('permite fechar o acerto final e abrir o acerto do mes', async () => {
-      render(<PainelAcerto acertoFinalMes={comEtapas} />);
-
-      await userEvent.click(screen.getByRole('button', { name: /Acerto final/ }));
-      expect(cartao(/Acerto final/).queryAllByRole('region')).toHaveLength(0);
-
-      await userEvent.click(screen.getByRole('button', { name: /Acerto do mês/ }));
-      expect(cartao(/Acerto do mês/).getByText('Mercado')).toBeInTheDocument();
+      expect(passoCinco().getAllByRole('region')).toHaveLength(2);
+      expect(within(screen.getByRole('region', { name: /Passo 4/ })).queryByText('Mercado')).not.toBeInTheDocument();
     });
 
     it('continua mostrando o alerta de lancamentos nao classificados', () => {

@@ -192,8 +192,12 @@ export interface BlocoPagante {
   // "Deste total": compartilhado, pessoal de quem pagou e pessoal do outro; e a metade do
   // compartilhado que cabe a cada um
   compartilhado: number;
+  // Só o compartilhado da fatura do cartão (sem boletos): as origens da fatura somam o total
+  compartilhadoNoCartao: number;
   pessoalProprio: number;
   pessoalDoOutro: number;
+  // Itens ainda sem classificação: entram no total da fatura, mas não no acerto
+  semCategoria: number;
   metadeDoCompartilhado: number;
 }
 
@@ -210,16 +214,37 @@ export interface LinhaConta {
   itens: ItemConta[];
 }
 
-// Espelha AcertoConsolidadoResponse: a seção "Acerto" do Divisor (sem pagamentos)
+// Espelha DivisaoCompartilhadoResponse: tudo que é 50/50 no mês e quem deve por isso
+export interface DivisaoCompartilhado {
+  pagoPorSilvio: number;
+  pagoPorClaucia: number;
+  total: number;
+  metadePorPessoa: number;
+  saldo: SaldoAcerto;
+}
+
+// Espelha ProvaRealResponse: a conta alternativa (deveria arcar - pagou) do titular que deve
+export interface ProvaReal {
+  titular: Titular;
+  deveriaArcar: number;
+  pagou: number;
+  divida: number;
+  confere: boolean;
+}
+
+// Espelha AcertoConsolidadoResponse: os passos 2 a 4 do resumo (sem pagamentos)
 export interface AcertoConsolidado {
   metadeDoQueClauciaPagou: LinhaConta; // o que o Silvio deve à Claucia
   metadeDoQueSilvioPagou: LinhaConta; // o que a Claucia deve ao Silvio
   saldoCompartilhado: number; // positivo: o Silvio deve; negativo: a Claucia deve
+  divisao: DivisaoCompartilhado;
   silvioNoCartaoDela: LinhaConta;
   clauciaNoCartaoDele: LinhaConta;
+  saldoPessoal: SaldoAcerto;
   subtotalDoMes: SaldoAcerto;
   acordosFixos: LinhaConta;
   total: SaldoAcerto;
+  provaReal: ProvaReal;
 }
 
 // Espelha AcertoFinalMesResponse (GET /faturas/{mes}/acerto-final)

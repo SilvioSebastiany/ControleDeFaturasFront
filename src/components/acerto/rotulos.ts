@@ -7,6 +7,11 @@ export const ROTULO_TITULAR: Record<Titular, string> = {
   [Titular.Claucia]: 'Claucia',
 };
 
+export const DO_TITULAR: Record<Titular, string> = {
+  [Titular.Silvio]: 'do Silvio',
+  [Titular.Claucia]: 'da Claucia',
+};
+
 export const PAGO_POR: Record<Titular, string> = {
   [Titular.Silvio]: 'pelo Silvio',
   [Titular.Claucia]: 'pela Claucia',

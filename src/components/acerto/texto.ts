@@ -76,3 +76,10 @@ export function descreverSaldo(saldo: SaldoAcerto): string {
     ? 'Estão quites'
     : `${ROTULO_TITULAR[saldo.quemDeve]} deve ${formatarValorAbsoluto(saldo.valor)}`;
 }
+
+// Sinal entre duas linhas de uma conta de "deve": somam quando o devedor é o mesmo (ou
+// algum lado está quite) e se descontam quando os devedores são diferentes.
+export function sinalEntre(anterior: SaldoAcerto, atual: SaldoAcerto): '+' | '−' {
+  if (anterior.quemDeve === null || atual.quemDeve === null) return '+';
+  return anterior.quemDeve === atual.quemDeve ? '+' : '−';
+}
