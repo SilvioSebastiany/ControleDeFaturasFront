@@ -987,3 +987,183 @@
   font-weight: 500;
   cursor: pointer;
 }
+
+
+/* Aba Carteira: gastos do mês por categoria. */
+.carteira-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  margin: 16px 0;
+  font-size: 14px;
+}
+
+.carteira-filtros select,
+.carteira-tabela select {
+  font: inherit;
+  font-size: 14px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.carteira-segmento {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.carteira-segmento button {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  padding: 4px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.carteira-segmento button.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.carteira-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin: 20px 0 8px;
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.carteira-total {
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--text);
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.carteira-ranking {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.carteira-ranking li {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.2fr) 120px 48px 2fr;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.carteira-ranking li:last-child {
+  border-bottom: none;
+}
+
+.carteira-ranking li.nao-categorizado {
+  background: var(--atencao-bg);
+}
+
+.carteira-ranking-nome {
+  color: var(--text-h);
+}
+
+.carteira-ranking-nome small {
+  color: var(--text);
+}
+
+.carteira-ranking .amount,
+.carteira-tabela .amount {
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.carteira-barra {
+  height: 8px;
+  background: var(--code-bg);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.carteira-barra i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+.nao-categorizado .carteira-barra i {
+  background: var(--atencao);
+}
+
+.carteira-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.carteira-tabela th,
+.carteira-tabela td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.carteira-tabela tr.row-nd {
+  background: var(--atencao-bg);
+}
+
+/* Celular: cada gasto vira um cartão (a tabela é a mesma, só muda o layout). */
+@media (max-width: 600px) {
+  .carteira-ranking li {
+    grid-template-columns: 1fr auto auto;
+  }
+
+  .carteira-ranking .carteira-barra {
+    grid-column: 1 / -1;
+  }
+
+  .carteira-tabela thead {
+    display: none;
+  }
+
+  .carteira-tabela,
+  .carteira-tabela tbody,
+  .carteira-tabela tr,
+  .carteira-tabela td {
+    display: block;
+  }
+
+  .carteira-tabela tr {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+
+  .carteira-tabela td {
+    border: none;
+    padding: 2px 0;
+  }
+
+  .carteira-tabela td.amount {
+    text-align: left;
+  }
+
+  .carteira-tabela td[data-rotulo='Categoria'] select {
+    width: 100%;
+    margin-top: 6px;
+    padding: 8px;
+  }
+}

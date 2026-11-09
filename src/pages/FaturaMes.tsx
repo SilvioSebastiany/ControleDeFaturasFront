@@ -7,17 +7,19 @@ import { PainelAcerto } from '../components/PainelAcerto.tsx';
 import { PillsMeses } from '../components/PillsMeses.tsx';
 import { AbaOutrosGastos } from '../components/AbaOutrosGastos.tsx';
 import { AbaRegras } from '../components/AbaRegras.tsx';
+import { AbaCarteira } from '../components/AbaCarteira.tsx';
 import { useTema } from '../hooks/useTema.ts';
 import { Titular } from '../types/fatura.ts';
 import type { AcertoFinalMes, Boleto, Transacao } from '../types/fatura.ts';
 
-type Aba = 'resumo' | 'silvio' | 'claucia' | 'outros-gastos' | 'regras';
+type Aba = 'resumo' | 'silvio' | 'claucia' | 'outros-gastos' | 'carteira' | 'regras';
 
 const ABAS: { id: Aba; rotulo: string; icone: string; label: string }[] = [
   { id: 'resumo', rotulo: '📊 Resumo', icone: '📊', label: 'Resumo' },
   { id: 'silvio', rotulo: '💳 Silvio', icone: '💳', label: 'Silvio' },
   { id: 'claucia', rotulo: '💳 Claucia', icone: '💳', label: 'Claucia' },
   { id: 'outros-gastos', rotulo: '💸 Outros Gastos', icone: '💸', label: 'Gastos' },
+  { id: 'carteira', rotulo: '💰 Carteira', icone: '💰', label: 'Carteira' },
   { id: 'regras', rotulo: '⚙️ Regras', icone: '⚙️', label: 'Regras' },
 ];
 
@@ -106,6 +108,13 @@ export function FaturaMes() {
     recarregarAcertoFinal();
   }
 
+  // Categoria de gasto não entra no acerto: troca só a transação, sem recarregar o acerto final.
+  function atualizarCategoria(transacaoAtualizada: Transacao) {
+    setTransacoes((atual) =>
+      atual.map((t) => (t.id === transacaoAtualizada.id ? transacaoAtualizada : t)),
+    );
+  }
+
   function atualizarBoleto(boletoAtualizado: Boleto) {
     setBoletos((atual) => atual.map((b) => (b.id === boletoAtualizado.id ? boletoAtualizado : b)));
     // Boletos entram no acerto do mês (T12/T13) — qualquer edição reflete nele.
@@ -180,7 +189,14 @@ export function FaturaMes() {
       </nav>
 
       {carregando && <p>Carregando...</p>}
-      {erro && <p className="erro-carregamento">{erro}</p>}
+      {erro && (
+        <p className="erro-carregamento">
+          {erro}{' '}
+          <button type="button" onClick={() => carregar(mes)}>
+            Tentar de novo
+          </button>
+        </p>
+      )}
 
       {aba === 'resumo' &&
         (acertoFinalMes ? (
@@ -223,6 +239,15 @@ export function FaturaMes() {
           onBoletoAtualizado={atualizarBoleto}
           onCategoriasAlteradas={() => carregar(mes)}
           onAcordosAlterados={recarregarAcertoFinal}
+        />
+      )}
+
+      {aba === 'carteira' && (
+        <AbaCarteira
+          mesCarregado={mesCarregado}
+          transacoes={transacoes}
+          onTransacaoAtualizada={atualizarCategoria}
+          onRecarregar={() => carregar(mes)}
         />
       )}
 

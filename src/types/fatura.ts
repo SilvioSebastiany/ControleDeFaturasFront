@@ -14,6 +14,7 @@ export {
   EtapaAcerto,
   OrigemItemFatura,
   FonteItemConta,
+  CategoriaGasto,
 } from './fatura.generated.ts';
 import type {
   Titular,
@@ -24,6 +25,7 @@ import type {
   EtapaAcerto,
   OrigemItemFatura,
   FonteItemConta,
+  CategoriaGasto,
 } from './fatura.generated.ts';
 
 // Espelha TransacaoResponse (src/api/Responses/TransacaoResponse.cs)
@@ -36,6 +38,7 @@ export interface Transacao {
   quem: QuemResponsavel;
   automatica: boolean;
   classificacaoManual: boolean;
+  categoria: CategoriaGasto;
 }
 
 // Espelha BoletoResponse
@@ -125,6 +128,12 @@ export interface ClassificarTransacaoResultado {
   id: string;
   quem: QuemResponsavel;
   classificacaoManual: boolean;
+}
+
+// Espelha CategorizarTransacaoCommandResult
+export interface CategorizarTransacaoResultado {
+  id: string;
+  categoria: CategoriaGasto;
 }
 
 // Espelha RegraClassificacaoResponse (GET /regras-classificacao, já ordenado

@@ -113,3 +113,25 @@ export const FonteItemConta = {
 } as const satisfies Record<string, FonteItemConta>;
 
 export const FonteItemConta_VALORES: readonly FonteItemConta[] = ['CartaoSilvio', 'CartaoClaucia', 'BoletoPagoPorSilvio', 'BoletoPagoPorClaucia', 'AcordoFixo'];
+
+// CategoriaGasto: os valores válidos que a API pode enviar/aceitar neste enum.
+export type CategoriaGasto = 'NaoCategorizado' | 'Rancho' | 'Mercado' | 'Farmacia' | 'AlimentacaoFora' | 'Combustivel' | 'Estacionamento' | 'Assinaturas' | 'Seguro' | 'Saude' | 'Parcelas' | 'Outros';
+
+// Para usar como valor (ex.: Titular.Silvio) em vez de string crua — mesmo
+// resultado, só evita erro de digitação no call site.
+export const CategoriaGasto = {
+  NaoCategorizado: 'NaoCategorizado',
+  Rancho: 'Rancho',
+  Mercado: 'Mercado',
+  Farmacia: 'Farmacia',
+  AlimentacaoFora: 'AlimentacaoFora',
+  Combustivel: 'Combustivel',
+  Estacionamento: 'Estacionamento',
+  Assinaturas: 'Assinaturas',
+  Seguro: 'Seguro',
+  Saude: 'Saude',
+  Parcelas: 'Parcelas',
+  Outros: 'Outros',
+} as const satisfies Record<string, CategoriaGasto>;
+
+export const CategoriaGasto_VALORES: readonly CategoriaGasto[] = ['NaoCategorizado', 'Rancho', 'Mercado', 'Farmacia', 'AlimentacaoFora', 'Combustivel', 'Estacionamento', 'Assinaturas', 'Seguro', 'Saude', 'Parcelas', 'Outros'];
